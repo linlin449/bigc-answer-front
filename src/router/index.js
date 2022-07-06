@@ -56,7 +56,7 @@ const routes = [
           {
             path: "/favorite",
             name: "favorite",
-            component: () => import("../views/student/favorite/Index.vue"),
+            component: () => import("../views/student/false/Index.vue"),
           },
         ],
       },
