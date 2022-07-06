@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
   <div class="body">
     <div class="login">
       <div class="login-con">
@@ -231,3 +232,11 @@ const resetForm = (formEl: FormInstance | undefined) => {
   background-color: rgba(255, 255, 255, 0.5);
 }
 </style>
+=======
+    登陆
+</template>
+<script setup>
+</script>
+<style>
+</style>
+>>>>>>> 897475d68c6f62e6d3c3547dc27288bb0565cc6c
