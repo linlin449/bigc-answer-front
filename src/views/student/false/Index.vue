@@ -1,6 +1,6 @@
 <template>
   <div>
-    学生界面
+    记录界面
   </div>
 </template>
 

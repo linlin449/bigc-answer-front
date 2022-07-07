@@ -111,6 +111,7 @@ import { useRouter } from "vue-router";
 import link from "../api/link.js";
 import url from "../api/url.js";
 import Sidentify from "../util/Sidentify.vue";
+import * as check from "../util/verfifcation.js"
 import { ElMessage } from "element-plus";
 import { FormInstance } from "element-plus";
 // import md5 from "../hook/index.js";
@@ -213,8 +214,11 @@ watch(ruleForm, (newval, oldval) => {
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate((valid) => {
-    if (valid) {
-      if (model.value === "register") {
+    if (!valid) {
+      console.log("error submit!");
+      return false;
+    } 
+    if (model.value === "register") {
         let data = {
           name: ruleForm.username,
           password: ruleForm.password,
@@ -247,16 +251,12 @@ const submitForm = (formEl: FormInstance | undefined) => {
               message: "登录成功",
               type: "success",
             });
-            router.push("/home");
+            router.push("/teacher");
           } else {
             ElMessage.error("登录失败");
           }
         });
       }
-    } else {
-      console.log("error submit!");
-      return false;
-    }
   });
 };
 /*重置*/
@@ -290,8 +290,7 @@ onMounted(() => {
 <style lang="scss">
 .body{
   margin-top: 200px;
-}
-.login {
+  .login {
   box-shadow: 0 6px 12px 0 rgba(138, 153, 150, 0.15);
   border-radius: 10px;
   width: 30%;
@@ -332,4 +331,6 @@ onMounted(() => {
     }
   }
 }
+}
+
 </style>

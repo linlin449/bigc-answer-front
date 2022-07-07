@@ -1,6 +1,6 @@
 <template>
   <div>
-    学生界面
+    考试
   </div>
 </template>
 
