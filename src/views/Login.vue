@@ -174,9 +174,8 @@ const validatePassword = (rule, value, callback) => {
 const checkCode = (rule, value, callback) => {
   if (!value) {
     return callback(new Error("验证码不能为空"));
-  } else if (identifyCode.value !== value) {
-    return callback(new Error("验证码错误"));
-  } else {
+  } 
+ else {
     callback();
   }
 };
@@ -269,14 +268,15 @@ const submitForm = (formEl: FormInstance | undefined) => {
         });
         MenuData[0].current = true;
       } else {
-        ElMessage.error("注册失败");
+        ElMessage.error(response.data.msg);
       }
     } else {
       let response = await link(
         url.login,
         "get",
         {},
-        { name: ruleForm.username, password: ruleForm.password } //md5(ruleForm.password).value }
+        { username: ruleForm.username, password: ruleForm.password ,
+        vercode:ruleForm.code,verkey:identifyCode.value} //md5(ruleForm.password).value }
       );
       if (response.data.code === code.NORMAL_SUCCESS) {
         ElMessage({
@@ -307,7 +307,7 @@ const refreshCode = async () => {
   identifyCode.value = response.data.data.key;
 };
 onMounted(() => {
-  //refreshCode()
+  refreshCode()
 });
 </script>
 
@@ -318,6 +318,7 @@ onMounted(() => {
   position: absolute;
   width: 100%;
   text-align: center;
+  overflow-y: auto;
   background-image: url("../assets/background.jpg");
   background-size: cover;
   .title {
