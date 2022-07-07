@@ -3,99 +3,40 @@
     <div class="title">欢迎登录bigc物理答题系统!</div>
     <div class="login">
       <ul class="menu-tab">
-        <li
-          v-for="v in MenuData"
-          :class="{ current: v.current }"
-          :key="v.type"
-          @click="clickMenu(v)"
-        >
+        <li v-for="v in MenuData" :class="{ current: v.current }" :key="v.type" @click="clickMenu(v)">
           {{ v.txt }}
         </li>
       </ul>
-      <el-form
-        ref="ruleFormRef"
-        :model="ruleForm"
-        status-icon
-        :rules="rules"
-        class="demo-ruleForm"
-        size="large"
-      >
+      <el-form ref="ruleFormRef" :model="ruleForm" status-icon :rules="rules" class="demo-ruleForm" size="large">
         <el-form-item prop="username">
-          <el-input
-            v-model="ruleForm.username"
-            placeholder="学号"
-            type="text"
-            autocomplete="off"
-            maxlength="9"
-          />
+          <el-input v-model="ruleForm.username" placeholder="学号" type="text" autocomplete="off" maxlength="9" />
         </el-form-item>
         <el-form-item prop="password">
-          <el-input
-            v-model="ruleForm.password"
-            type="password"
-            placeholder="密码"
-            autocomplete="off"
-            minlength="6"
-            maxlength="15"
-          />
+          <el-input v-model="ruleForm.password" type="password" placeholder="密码" autocomplete="off" minlength="6"
+            maxlength="15" />
         </el-form-item>
 
         <el-form-item prop="code" v-show="model === 'login'">
-          <el-input
-            class="code"
-            v-model="ruleForm.code"
-            type="text"
-            placeholder="验证码"
-            autocomplete="off"
-            maxlength="4"
-            minlength="4"
-          />
-          <el-image
-            class="login_code"
-            :src="imgBase64"
-            @click="refreshCode()"
-          />
+          <el-input class="code" v-model="ruleForm.code" type="text" placeholder="验证码" autocomplete="off" maxlength="5"
+            minlength="5" />
+          <el-image class="login_code" :src="imgBase64" @click="refreshCode()" />
         </el-form-item>
 
         <el-form-item prop="repassword" v-show="model === 'register'">
-          <el-input
-            v-model="ruleForm.repassword"
-            type="password"
-            placeholder="重复密码"
-            minlength="6"
-            maxlength="15"
-          />
+          <el-input v-model="ruleForm.repassword" type="password" placeholder="重复密码" minlength="6" maxlength="15" />
         </el-form-item>
-         <el-form-item prop="name" v-show="model === 'register'">
-          <el-input
-            v-model="ruleForm.name"
-            type="text"
-            placeholder="姓名"
-            maxlength="5"
-          />
+        <el-form-item prop="name" v-show="model === 'register'">
+          <el-input v-model="ruleForm.name" type="text" placeholder="姓名" maxlength="5" />
         </el-form-item>
         <el-form-item prop="email" v-show="model === 'register'">
-          <el-input
-            v-model="ruleForm.email"
-            type="text"
-            placeholder="邮箱找回密码使用"
-          />
+          <el-input v-model="ruleForm.email" type="text" placeholder="邮箱找回密码使用" />
         </el-form-item>
 
         <el-form-item>
-          <el-button
-            :disabled="btnbool"
-            type="primary"
-            class="login-btn block"
-            @click="submitForm(ruleFormRef)"
-            >{{ model === "login" ? "登录" : "注册" }}</el-button
-          >
-          <el-button
-            type="primary"
-            class="login-btn block"
-            @click="resetForm(ruleFormRef)"
-            >重置</el-button
-          >
+          <el-button :disabled="btnbool" type="primary" class="login-btn block" @click="submitForm(ruleFormRef)">{{
+              model === "login" ? "登录" : "注册"
+          }}</el-button>
+          <el-button type="primary" class="login-btn block" @click="resetForm(ruleFormRef)">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -134,7 +75,7 @@ let clickMenu = (item) => {
 const ruleFormRef = ref<FormInstance>();
 const ruleForm = reactive({
   //表单部分
-  name:"",
+  name: "",
   username: "",
   password: "",
   code: "",
@@ -145,18 +86,18 @@ const ruleForm = reactive({
 /*校验规则*/
 const checkname = (rule, value, callback) => {
   if (!value) {
-     callback(new Error("姓名不能为空"));
+    callback(new Error("姓名不能为空"));
   } else if (!check.checkUsername(value)) {
-     callback(new Error("请输入大于一位的中文名"));
+    callback(new Error("请输入大于一位的中文名"));
   } else {
     callback();
   }
 };
 const checkUsername = (rule, value, callback) => {
   if (!value) {
-     callback(new Error("学号不能为空"));
+    callback(new Error("学号不能为空"));
   } else if (!check.checkUsername(value)) {
-     callback(new Error("学号规则错误，9位数字，不能以0开头"));
+    callback(new Error("学号规则错误，9位数字，不能以0开头"));
   } else {
     callback();
   }
@@ -174,8 +115,8 @@ const validatePassword = (rule, value, callback) => {
 const checkCode = (rule, value, callback) => {
   if (!value) {
     return callback(new Error("验证码不能为空"));
-  } 
- else {
+  }
+  else {
     callback();
   }
 };
@@ -219,7 +160,7 @@ const rules = reactive({
 let btnbool = ref(true);
 watch(ruleForm, (newval, oldval) => {
   if (model.value === "login") {
-    if (newval.username != "" && newval.password != ""&& newval.code != "") {
+    if (newval.username != "" && newval.password != "" && newval.code != "") {
       btnbool.value = false;
     } else {
       btnbool.value = true;
@@ -245,16 +186,16 @@ watch(ruleForm, (newval, oldval) => {
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate(async (valid) => {
-    if (!valid) {
-      console.log("error submit!");
-      return false;
-    }
+    // if (!valid) {
+    //   console.log("error submit!");
+    //   return false;
+    // }
     if (model.value === "register") {
       let data = {
         username: ruleForm.username,
-        name:ruleForm.name,
+        name: ruleForm.name,
         password: ruleForm.password,
-        email:ruleForm.email,
+        email: ruleForm.email,
       };
       let response = await link(url.register, "post", data);
       if (response.data.code === code.NORMAL_SUCCESS) {
@@ -272,18 +213,21 @@ const submitForm = (formEl: FormInstance | undefined) => {
       }
     } else {
       let response = await link(
-        url.login,
-        "get",
-        {},
-        { username: ruleForm.username, password: ruleForm.password ,
-        vercode:ruleForm.code,verkey:identifyCode.value} //md5(ruleForm.password).value }
+        url.login.student,
+        "post",
+
+        {
+          username: ruleForm.username, password: ruleForm.password,
+          vercode: ruleForm.code, verkey: identifyCode.value
+        },//md5(ruleForm.password).value }
+        {}
       );
       if (response.data.code === code.NORMAL_SUCCESS) {
         ElMessage({
           message: "登录成功",
           type: "success",
         });
-        router.push("/"); //增加cookies
+        router.push({ name: "student" }); //增加cookies
         cookies.VueCookies.set("token", response.data.data);
       } else {
         ElMessage.error("登录失败");
@@ -321,20 +265,24 @@ onMounted(() => {
   overflow-y: auto;
   background-image: url("../assets/background.jpg");
   background-size: cover;
+
   .title {
     font-size: 40px;
     color: rgb(13, 237, 69);
     margin-bottom: 30px;
   }
+
   .login {
     background-color: rgba(169, 163, 163, 0.5);
     box-shadow: 0 6px 12px 0 rgba(138, 153, 150, 0.15);
     border-radius: 10px;
     width: 450px;
     margin: auto;
+
     .menu-tab {
       padding: 0;
       padding-top: 10px;
+
       li {
         cursor: pointer;
         display: inline-block; //行内块
@@ -345,23 +293,28 @@ onMounted(() => {
         color: rgb(253, 253, 253);
         border-radius: 8px;
       }
+
       .current {
         background-color: rgba(14, 180, 231, 0.5);
       }
     }
+
     .demo-ruleForm {
       display: inline-block;
       width: 60%;
 
       margin: auto;
+
       .block {
         display: block;
         width: 40%;
         margin: auto;
       }
+
       .code {
         width: 50%;
       }
+
       .login_code {
         margin-top: 10px;
         margin-left: 10px;
