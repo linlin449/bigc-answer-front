@@ -1,5 +1,5 @@
 import axios from "axios"
-let axiosurl=""
+let axiosurl="http://localhost:8080"
 
 const service=axios.create(
     {

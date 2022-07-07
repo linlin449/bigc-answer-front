@@ -1,5 +1,6 @@
 <template>
   <div class="body">
+    <div class="title">欢迎登录bigc物理答题系统!</div>
     <div class="login">
       <ul class="menu-tab">
         <li
@@ -22,9 +23,10 @@
         <el-form-item prop="username">
           <el-input
             v-model="ruleForm.username"
-            placeholder="用户名/邮箱"
+            placeholder="学号"
             type="text"
             autocomplete="off"
+            maxlength="9"
           />
         </el-form-item>
         <el-form-item prop="password">
@@ -45,30 +47,13 @@
             type="text"
             placeholder="验证码"
             autocomplete="off"
+            maxlength="4"
+            minlength="4"
           />
-          <div class="login_code" @click="refreshCode">
-            <Sidentify :identifyCode="identifyCode" />
-          </div>
-        </el-form-item>
-
-        <el-form-item prop="repassword" v-show="model === 'register'">
-          <el-input
-            v-model="ruleForm.repassword"
-            type="password"
-            placeholder="重复密码"
-            minlength="6"
-            maxlength="15"
-          />
-        </el-form-item>
-
-
-        <el-form-item prop="repassword" v-show="model === 'register'">
-          <el-input
-            v-model="ruleForm.repassword"
-            type="password"
-            placeholder="重复密码"
-            minlength="6"
-            maxlength="15"
+          <el-image
+            class="login_code"
+            :src="imgBase64"
+            @click="refreshCode()"
           />
         </el-form-item>
 
@@ -81,7 +66,21 @@
             maxlength="15"
           />
         </el-form-item>
-
+         <el-form-item prop="name" v-show="model === 'register'">
+          <el-input
+            v-model="ruleForm.name"
+            type="text"
+            placeholder="姓名"
+            maxlength="5"
+          />
+        </el-form-item>
+        <el-form-item prop="email" v-show="model === 'register'">
+          <el-input
+            v-model="ruleForm.email"
+            type="text"
+            placeholder="邮箱找回密码使用"
+          />
+        </el-form-item>
 
         <el-form-item>
           <el-button
@@ -92,7 +91,6 @@
             >{{ model === "login" ? "登录" : "注册" }}</el-button
           >
           <el-button
-            :disabled="btnbool"
             type="primary"
             class="login-btn block"
             @click="resetForm(ruleFormRef)"
@@ -105,16 +103,16 @@
 </template>
 
 <script lang="ts" setup>
+import cookies from "vue-cookies";
 import { reactive, watch, onMounted } from "vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import link from "../api/link.js";
 import url from "../api/url.js";
-import Sidentify from "../util/Sidentify.vue";
-import * as check from "../util/verfifcation.js"
+import code from "../api/code.js";
+import * as check from "../util/verfifcation.js";
 import { ElMessage } from "element-plus";
 import { FormInstance } from "element-plus";
-// import md5 from "../hook/index.js";
 
 let router = useRouter(); //登陆成功后跳转到首页
 /*登录注册按钮数据及逻辑*/
@@ -136,35 +134,49 @@ let clickMenu = (item) => {
 const ruleFormRef = ref<FormInstance>();
 const ruleForm = reactive({
   //表单部分
+  name:"",
   username: "",
   password: "",
   code: "",
   repassword: "",
+  email: "",
 });
 
 /*校验规则*/
+const checkname = (rule, value, callback) => {
+  if (!value) {
+     callback(new Error("姓名不能为空"));
+  } else if (!check.checkUsername(value)) {
+     callback(new Error("请输入大于一位的中文名"));
+  } else {
+    callback();
+  }
+};
 const checkUsername = (rule, value, callback) => {
   if (!value) {
-    return callback(new Error("邮箱不能为空"));
+     callback(new Error("学号不能为空"));
+  } else if (!check.checkUsername(value)) {
+     callback(new Error("学号规则错误，9位数字，不能以0开头"));
+  } else {
+    callback();
   }
-  callback();
+};
+
+const validatePassword = (rule, value, callback) => {
+  if (!value) {
+    callback(new Error("密码不能为空"));
+  } else if (!check.checkPassword(value)) {
+    callback("密码格式不正确，正确为6~16位，包含大小写字母和数字的组合");
+  } else {
+    callback();
+  }
 };
 const checkCode = (rule, value, callback) => {
   if (!value) {
     return callback(new Error("验证码不能为空"));
   } else if (identifyCode.value !== value) {
     return callback(new Error("验证码错误"));
-  }
-  callback();
-};
-const validatePassword = (rule, value, callback) => {
-  if (value === "") {
-    callback(new Error("密码不能为空"));
   } else {
-    if (ruleForm.password !== "") {
-      if (!ruleFormRef.value) return;
-      ruleFormRef.value.validateField("checkPass", () => null);
-    }
     callback();
   }
 };
@@ -181,18 +193,34 @@ const validatePass2 = (rule, value, callback) => {
     callback();
   }
 };
+const checkEmail = (rule, value, callback) => {
+  //登陆时不用校验重复密码
+  if (model.value === "login") {
+    callback();
+  }
+  if (value === "") {
+    callback(new Error("邮箱不能为空"));
+  } else if (check.checkEmail(value)) {
+    callback(new Error("邮箱格式不正确"));
+  } else {
+    callback();
+  }
+};
 const rules = reactive({
+
   password: [{ validator: validatePassword, trigger: "blur" }],
   repassword: [{ validator: validatePass2, trigger: "blur" }],
   username: [{ validator: checkUsername, trigger: "blur" }],
+  name: [{ validator: checkname, trigger: "blur" }],
   code: [{ validator: checkCode, trigger: "blur" }],
+  email: [{ validator: checkEmail, trigger: "blur" }],
 });
 /**/
 /*检测校验是否通过，通过按钮变为可登录*/
 let btnbool = ref(true);
 watch(ruleForm, (newval, oldval) => {
   if (model.value === "login") {
-    if (newval.username != "" && newval.password != "") {
+    if (newval.username != "" && newval.password != ""&& newval.code != "") {
       btnbool.value = false;
     } else {
       btnbool.value = true;
@@ -202,6 +230,10 @@ watch(ruleForm, (newval, oldval) => {
       newval.username != "" &&
       newval.password != "" &&
       newval.repassword != ""
+      &&
+      newval.name != ""
+      &&
+      newval.email != ""
     ) {
       btnbool.value = false;
     } else {
@@ -213,50 +245,50 @@ watch(ruleForm, (newval, oldval) => {
 /*提交*/
 const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
-  formEl.validate((valid) => {
+  formEl.validate(async (valid) => {
     if (!valid) {
       console.log("error submit!");
       return false;
-    } 
+    }
     if (model.value === "register") {
-        let data = {
-          name: ruleForm.username,
-          password: ruleForm.password,
-        };
-        link(url.register, "post", data).then((ok: any) => {
-          console.log(ok.data);
-          if (Object.keys(ok.data).length !== 0) {
-            ElMessage({
-              message: "注册成功",
-              type: "success",
-            });
-            model.value = "login";
-            MenuData.forEach((element) => {
-              element.current = false;
-            });
-            MenuData[0].current = true;
-          } else {
-            ElMessage.error("注册失败");
-          }
+      let data = {
+        username: ruleForm.username,
+        name:ruleForm.name,
+        password: ruleForm.password,
+        email:ruleForm.email,
+      };
+      let response = await link(url.register, "post", data);
+      if (response.data.code === code.NORMAL_SUCCESS) {
+        ElMessage({
+          message: "注册成功",
+          type: "success",
         });
+        model.value = "login";
+        MenuData.forEach((element) => {
+          element.current = false;
+        });
+        MenuData[0].current = true;
       } else {
-        link(
-          url.register,
-          "get",
-          {},
-          { name: ruleForm.username, password: ruleForm.password } //md5(ruleForm.password).value }
-        ).then((ok) => {
-          if (ok.data.length != 0) {
-            ElMessage({
-              message: "登录成功",
-              type: "success",
-            });
-            router.push("/teacher");
-          } else {
-            ElMessage.error("登录失败");
-          }
-        });
+        ElMessage.error("注册失败");
       }
+    } else {
+      let response = await link(
+        url.login,
+        "get",
+        {},
+        { name: ruleForm.username, password: ruleForm.password } //md5(ruleForm.password).value }
+      );
+      if (response.data.code === code.NORMAL_SUCCESS) {
+        ElMessage({
+          message: "登录成功",
+          type: "success",
+        });
+        router.push("/"); //增加cookies
+        cookies.VueCookies.set("token", response.data.data);
+      } else {
+        ElMessage.error("登录失败");
+      }
+    }
   });
 };
 /*重置*/
@@ -267,70 +299,73 @@ const resetForm = (formEl: FormInstance | undefined) => {
 /**/
 
 // 图形验证码
-let identifyCodes = "1234567890";
-let identifyCode = ref("3212");
-const randomNum = (min, max) => {
-  return Math.floor(Math.random() * (max - min) + min);
-};
-const makeCode = (o, l) => {
-  for (let i = 0; i < l; i++) {
-    identifyCode.value += o[randomNum(0, o.length)];
-  }
-};
-const refreshCode = () => {
-  identifyCode.value = "";
-  makeCode(identifyCodes, 4);
+let identifyCode = ref("");
+let imgBase64 = ref("");
+const refreshCode = async () => {
+  let response = await link(url.getcaptcha);
+  imgBase64.value = response.data.data.image;
+  identifyCode.value = response.data.data.key;
 };
 onMounted(() => {
-  identifyCode.value = "";
-  makeCode(identifyCodes, 4);
+  //refreshCode()
 });
 </script>
 
 <style lang="scss">
-.body{
-  margin-top: 200px;
+.body {
+  padding-top: 190px;
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  background-image: url("../assets/background.jpg");
+  background-size: cover;
+  .title {
+    font-size: 40px;
+    color: rgb(13, 237, 69);
+    margin-bottom: 30px;
+  }
   .login {
-  box-shadow: 0 6px 12px 0 rgba(138, 153, 150, 0.15);
-  border-radius: 10px;
-  width: 30%;
-
-  margin: auto;
-  .menu-tab {
-    padding: 0;
-    padding-top: 10px;
-    li {
-      display: inline-block; //行内块
-      margin: auto;
-      width: 20%;
-      line-height: 50px;
-      font-size: 20px;
-      color: rgb(8, 236, 110);
-      border-radius: 8px;
-    }
-    .current {
-      background-color: rgba(231, 14, 14, 0.5);
-    }
-  }
-  .demo-ruleForm {
-    display: inline-block;
-    width: 50%;
-    
+    background-color: rgba(169, 163, 163, 0.5);
+    box-shadow: 0 6px 12px 0 rgba(138, 153, 150, 0.15);
+    border-radius: 10px;
+    width: 450px;
     margin: auto;
-    .block {
-      display: block;
-      width: 30%;
+    .menu-tab {
+      padding: 0;
+      padding-top: 10px;
+      li {
+        cursor: pointer;
+        display: inline-block; //行内块
+        margin: auto;
+        width: 25%;
+        line-height: 50px;
+        font-size: 20px;
+        color: rgb(253, 253, 253);
+        border-radius: 8px;
+      }
+      .current {
+        background-color: rgba(14, 180, 231, 0.5);
+      }
+    }
+    .demo-ruleForm {
+      display: inline-block;
+      width: 60%;
+
       margin: auto;
-    }
-    .code {
-      width: 50%;
-    }
-    .login_code {
-      margin-top: 10px;
-      margin-left: 10px;
+      .block {
+        display: block;
+        width: 40%;
+        margin: auto;
+      }
+      .code {
+        width: 50%;
+      }
+      .login_code {
+        margin-top: 10px;
+        margin-left: 10px;
+      }
     }
   }
 }
-}
-
 </style>
