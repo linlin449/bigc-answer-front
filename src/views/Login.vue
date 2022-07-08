@@ -215,11 +215,10 @@ const submitForm = (formEl: FormInstance | undefined) => {
       let response = await link(
         url.login.student,
         "post",
-
         {
           username: ruleForm.username, password: ruleForm.password,
           vercode: ruleForm.code, verkey: identifyCode.value
-        },//md5(ruleForm.password).value }
+        },
         {}
       );
       if (response.data.code === code.NORMAL_SUCCESS) {
@@ -281,7 +280,7 @@ onMounted(() => {
     .menu-tab {
       padding: 0;
       padding-top: 10px;
-
+      padding-bottom: 10px;
       li {
         cursor: pointer;
         display: inline-block; //行内块
@@ -292,7 +291,6 @@ onMounted(() => {
         color: rgb(253, 253, 253);
         border-radius: 8px;
       }
-
       .current {
         background-color: rgba(14, 180, 231, 0.5);
       }
