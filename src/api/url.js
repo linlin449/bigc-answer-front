@@ -1,10 +1,10 @@
 let url = {
   login: {
-    student: "/student/login",
-    admin: "/admin/login",
-    teacher: "/teacher/login",
+    student: "/api/student/login",
+    admin: "/api/admin/login",
+    teacher: "/api/teacher/login",
   },
   getcaptcha: "/api/captcha/getcaptcha",
-  register: "/student/register",
+  register: "/api/student/register",
 };
 export default url;
