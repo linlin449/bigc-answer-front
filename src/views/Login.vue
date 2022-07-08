@@ -218,12 +218,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         {
           username: ruleForm.username, password: ruleForm.password,
           vercode: ruleForm.code, verkey: identifyCode.value
-<<<<<<< HEAD
-        },
-        {}
-=======
         },//md5(ruleForm.password).value }
->>>>>>> 790f582c6e5f394245cb4ff935b8b973b1892512
       );
       if (response.data.code === code.NORMAL_SUCCESS) {
         ElMessage({
@@ -289,6 +284,7 @@ onMounted(() => {
       padding: 0;
       padding-top: 10px;
       padding-bottom: 10px;
+
       li {
         cursor: pointer;
         display: inline-block; //行内块
@@ -299,6 +295,7 @@ onMounted(() => {
         color: rgb(253, 253, 253);
         border-radius: 8px;
       }
+
       .current {
         background-color: rgba(14, 180, 231, 0.5);
       }
