@@ -39,7 +39,7 @@ const routes = [
   {
     path: "/student",
     name: "student",
-    component: () => import("../views/student/Index.vue"),
+    component: () => import("../views/student/StudentIndex.vue"),
     children: [
       {
         path: "analysis",
@@ -54,7 +54,7 @@ const routes = [
       {
         path: "exam",
         name: "examStudent",
-        component: () => import("../views/student/exam/Index.vue"),
+        component: () => import("../views/student/exam/StudentExam.vue"),
       },
       {
         path: "favorite",

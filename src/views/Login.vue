@@ -255,7 +255,7 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .body {
   padding-top: 190px;
   height: 100%;
@@ -265,7 +265,6 @@ onMounted(() => {
   overflow-y: auto;
   background-image: url("../assets/background.jpg");
   background-size: cover;
-
   .title {
     font-size: 40px;
     color: rgb(13, 237, 69);
@@ -302,9 +301,7 @@ onMounted(() => {
     .demo-ruleForm {
       display: inline-block;
       width: 60%;
-
       margin: auto;
-
       .block {
         display: block;
         width: 40%;
