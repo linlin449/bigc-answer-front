@@ -1,7 +1,7 @@
 import code from "../api/code";
-import { VueCookies } from "vue-cookies";
+import { useCookies } from "vue3-cookies";
 
-const cookies = VueCookies
+const { cookies } = useCookies
 const catchError = {
     catch: function (response) {
         if (response != undefined && response.data != undefined) {
@@ -14,7 +14,7 @@ const catchError = {
                     //未登录错误
                     console.log("未登录", errorUrl);
                     //清除cookie,跳转登录页
-                    cookies.VueCookies.remove("token")
+                    cookies.remove("token")
                     router.push({ name: 'login' })
                     break;
                 case code.INTERNAL_SERVER_ERROR:
@@ -25,7 +25,7 @@ const catchError = {
                     //未授权错误
                     console.log("未授权", errorUrl);
                     //用户试图越权访问,清除cookie
-                    cookies.VueCookies.remove("token")
+                    cookies.remove("token")
                     router.push({ name: 'login' })
                     break;
                 case code.PARAMETER_ERROR:
