@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import cookies from "vue-cookies";
+import { useCookies } from 'vue3-cookies'
 import { reactive, watch, onMounted } from "vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
@@ -54,7 +54,7 @@ import code from "../api/code.js";
 import * as check from "../util/verfifcation.js";
 import { ElMessage } from "element-plus";
 import { FormInstance } from "element-plus";
-
+const { cookies } = useCookies()
 let router = useRouter(); //登陆成功后跳转到首页
 /*登录注册按钮数据及逻辑*/
 const MenuData = reactive([
@@ -218,18 +218,25 @@ const submitForm = (formEl: FormInstance | undefined) => {
         {
           username: ruleForm.username, password: ruleForm.password,
           vercode: ruleForm.code, verkey: identifyCode.value
+<<<<<<< HEAD
         },
         {}
+=======
+        },//md5(ruleForm.password).value }
+>>>>>>> 790f582c6e5f394245cb4ff935b8b973b1892512
       );
       if (response.data.code === code.NORMAL_SUCCESS) {
         ElMessage({
-          message: "登录成功",
+          message: response.data.msg,
           type: "success",
         });
         router.push({ name: "student" }); //增加cookies
-        cookies.VueCookies.set("token", response.data.data);
+        cookies.set("token", response.data.data.token, new Date(response.data.data.expire));
       } else {
-        ElMessage.error("登录失败");
+        //登陆失败
+        ElMessage.error(response.data.msg);
+        //刷新验证码
+        refreshCode();
       }
     }
   });
@@ -264,6 +271,7 @@ onMounted(() => {
   overflow-y: auto;
   background-image: url("../assets/background.jpg");
   background-size: cover;
+
   .title {
     font-size: 40px;
     color: rgb(13, 237, 69);
@@ -298,8 +306,9 @@ onMounted(() => {
 
     .demo-ruleForm {
       display: inline-block;
-      width: 60%;
+      width: 65%;
       margin: auto;
+
       .block {
         display: block;
         width: 40%;
