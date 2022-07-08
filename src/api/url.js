@@ -4,7 +4,7 @@ let url = {
     admin: "/admin/login",
     teacher: "/teacher/login",
   },
-  getcaptcha: "/captcha/getcaptcha",
+  getcaptcha: "/api/captcha/getcaptcha",
   register: "/student/register",
 };
 export default url;

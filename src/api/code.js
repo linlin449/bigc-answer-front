@@ -6,7 +6,7 @@ let code = {
      UNAUTHORIZED_ERROR : 401,
 
     //服务器内部错误
-     ERNAL_SERVER_ERROR : 500,
+    INTERNAL_SERVER_ERROR : 500,
 
     //未登录错误
      NOTLOGIN_ERROR : 10000,
