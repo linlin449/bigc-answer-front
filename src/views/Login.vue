@@ -54,6 +54,8 @@ import code from "../api/code.js";
 import * as check from "../util/verfifcation.js";
 import { ElMessage } from "element-plus";
 import { FormInstance } from "element-plus";
+import { useStore } from 'vuex';
+const store = useStore();
 const { cookies } = useCookies()
 let router = useRouter(); //登陆成功后跳转到首页
 /*登录注册按钮数据及逻辑*/
@@ -220,6 +222,8 @@ const submitForm = (formEl: FormInstance | undefined) => {
           vercode: ruleForm.code, verkey: identifyCode.value
         },//md5(ruleForm.password).value }
       );
+      // store.getters.set
+      store.commit("setUsername", ruleForm.username);
       if (response.data.code === code.NORMAL_SUCCESS) {
         ElMessage({
           message: response.data.msg,

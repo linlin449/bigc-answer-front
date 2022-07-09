@@ -6,5 +6,10 @@ let url = {
   },
   getcaptcha: "/api/captcha/getcaptcha",
   register: "/api/student/register",
+  student: {
+    getInfo: (username) => {
+      return "/api/student/info/" + username
+    }
+  }
 };
 export default url;
