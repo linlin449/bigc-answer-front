@@ -49,7 +49,7 @@ const routes = [
       {
         path: "answer",
         name: "answerStudent",
-        component: () => import("../views/student/answer/Index.vue"),
+        component: () => import("../views/student/answer/StudentAnswer.vue"),
       },
       {
         path: "exam",

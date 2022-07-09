@@ -9,8 +9,10 @@
           <li @click="handelSelect('examStudent')">考试</li>
           <li @click="handelSelect('analysisStudent')">分析</li>
           <li @click="handelSelect('favoriteStudent')">收藏</li>        
-          <li class="right" @mouseenter="flag = !flag" @mouseleave="flag = !flag">
-              <span>董林林</span> 
+          <li class="right" @mouseenter="flag = !flag" @mouseleave="flag = !flag">  
+           <svg class="icon" aria-hidden="true">
+  <use xlink:href="#icon-kaoshi"></use>
+</svg> <span>董林林</span> 
           <div class="msg" v-if="flag">
               <p @click="manage()">个人信息</p>
               <p class="exit" @click="exit()">退出</p>
@@ -31,6 +33,7 @@
 import {ref} from "vue"
 import { useRouter } from 'vue-router';
 import myfooter from "../../components/myFooter.vue"
+
 const router = useRouter()
 let flag=ref(false)
 let handelSelect=(index)=>{
