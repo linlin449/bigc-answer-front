@@ -9,7 +9,14 @@
           <li @click="handelSelect('examStudent')">考试</li>
           <li @click="handelSelect('analysisStudent')">分析</li>
           <li @click="handelSelect('favoriteStudent')">收藏</li>
-          <li class="right" @mouseenter="flag = !flag" @mouseleave="flag = !flag">
+          <li
+            class="right"
+            @mouseenter="flag = !flag"
+            @mouseleave="flag = !flag"
+          >
+            <svg class="icon" aria-hidden="true">
+              <use xlink:href="#icon-yonghu"></use>
+            </svg>
             <span>{{ studentInfo.data.name }}</span>
             <div class="msg" v-if="flag">
               <p @click="manage()">个人信息</p>
@@ -28,44 +35,39 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue"
-import { useRouter } from 'vue-router';
+import { onMounted, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import code from "../../api/code";
 import link from "../../api/link";
 import url from "../../api/url";
-import myfooter from "../../components/myFooter.vue"
+import myfooter from "../../components/myFooter.vue";
 
 const ErrorCode = code;
-const store = useStore()
-const router = useRouter()
-let flag = ref(false)
+const store = useStore();
+const router = useRouter();
+let flag = ref(false);
 let handelSelect = (index) => {
-  router.push({ name: index })
-}
-let manage = () => {
-
-}
-let exit = () => {
-
-}
+  router.push({ name: index });
+};
+let manage = () => {};
+let exit = () => {};
 // 学生信息
-const studentInfo = reactive({ data: {} })
+const studentInfo = reactive({ data: {} });
 const getStudentInfo = async () => {
-  let response = await link(url.student.getInfo(store.state.username), "get")
+  let response = await link(url.student.getInfo(store.state.username), "get");
   if (response.data.code === ErrorCode.NORMAL_SUCCESS) {
-    studentInfo.data = response.data.data.student
+    studentInfo.data = response.data.data.student;
   }
-}
+};
 onMounted(() => {
-  getStudentInfo()
-})
+  getStudentInfo();
+});
 </script>
 
 <style lang="scss" scoped>
 .right {
   margin-right: 6px;
-
 }
 
 .icon {
