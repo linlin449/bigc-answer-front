@@ -276,19 +276,16 @@ onMounted(() => {
     color: rgb(13, 237, 69);
     margin-bottom: 30px;
   }
-
   .login {
     background-color: rgba(169, 163, 163, 0.5);
     box-shadow: 0 6px 12px 0 rgba(138, 153, 150, 0.15);
     border-radius: 10px;
     width: 450px;
     margin: auto;
-
     .menu-tab {
       padding: 0;
       padding-top: 10px;
       padding-bottom: 10px;
-
       li {
         cursor: pointer;
         display: inline-block; //行内块
