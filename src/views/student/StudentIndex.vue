@@ -8,19 +8,10 @@
           <li @click="handelSelect('answerStudent')">答题</li>
           <li @click="handelSelect('examStudent')">考试</li>
           <li @click="handelSelect('analysisStudent')">分析</li>
-<<<<<<< HEAD
-          <li @click="handelSelect('favoriteStudent')">收藏</li>        
-          <li class="right" @mouseenter="flag = !flag" @mouseleave="flag = !flag">  
-           <svg class="icon" aria-hidden="true">
-  <use xlink:href="#icon-kaoshi"></use>
-</svg> <span>董林林</span> 
-          <div class="msg" v-if="flag">
-=======
           <li @click="handelSelect('favoriteStudent')">收藏</li>
           <li class="right" @mouseenter="flag = !flag" @mouseleave="flag = !flag">
             <span>{{ studentInfo.data.name }}</span>
             <div class="msg" v-if="flag">
->>>>>>> eb82a6e8acf4086c2a6a1cff88ce60b94862352a
               <p @click="manage()">个人信息</p>
               <p class="exit" @click="exit()">退出</p>
             </div>
@@ -45,11 +36,8 @@ import link from "../../api/link";
 import url from "../../api/url";
 import myfooter from "../../components/myFooter.vue"
 
-<<<<<<< HEAD
-=======
 const ErrorCode = code;
 const store = useStore()
->>>>>>> eb82a6e8acf4086c2a6a1cff88ce60b94862352a
 const router = useRouter()
 let flag = ref(false)
 let handelSelect = (index) => {
