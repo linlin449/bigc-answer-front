@@ -315,6 +315,7 @@ onMounted(() => {
 
       .code {
         width: 50%;
+        margin-top:10px
       }
 
       .login_code {
