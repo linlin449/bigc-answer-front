@@ -229,8 +229,9 @@ const submitForm = (formEl: FormInstance | undefined) => {
           message: response.data.msg,
           type: "success",
         });
-        router.push({ name: "student" }); //增加cookies
+        store.commit("setToken", response.data.data.token);
         cookies.set("token", response.data.data.token, new Date(response.data.data.expire));
+        router.push({ name: "student" }); //增加cookies
       } else {
         //登陆失败
         ElMessage.error(response.data.msg);
@@ -276,16 +277,19 @@ onMounted(() => {
     color: rgb(13, 237, 69);
     margin-bottom: 30px;
   }
+
   .login {
     background-color: rgba(169, 163, 163, 0.5);
     box-shadow: 0 6px 12px 0 rgba(138, 153, 150, 0.15);
     border-radius: 10px;
     width: 450px;
     margin: auto;
+
     .menu-tab {
       padding: 0;
       padding-top: 10px;
       padding-bottom: 10px;
+
       li {
         cursor: pointer;
         display: inline-block; //行内块
@@ -315,7 +319,7 @@ onMounted(() => {
 
       .code {
         width: 50%;
-        margin-top:10px
+        margin-top: 10px
       }
 
       .login_code {
