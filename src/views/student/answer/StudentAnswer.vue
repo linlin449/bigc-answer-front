@@ -140,6 +140,7 @@ let getChapter = async () => {
   MenuData.data[0].chapters[0].current = true;
 };
 let clickChapterMenu = (val) => {
+  if(val.current) return
   MenuData.data.forEach((element) => {
     element.chapters.forEach((e) => {
       e.current = false;

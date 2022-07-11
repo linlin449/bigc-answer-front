@@ -32,6 +32,7 @@ function sortByTypeID(data, typeid) {
   };
   data.forEach((e) => {
     if (e.typeId === typeid) {
+      question={}
       question.id = e.id;
       question.title = e.question;
       question.describe = e.describe;
