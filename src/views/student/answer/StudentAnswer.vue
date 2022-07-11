@@ -14,24 +14,92 @@
       </ul>
     </div>
     <div class="question-box">
-      <!-- <ul class="question-menu" style="overflow: auto">
-        <li
-          class="question-li"
-          v-for="val in questionMenuData.data"
-          :key="val.id"
-          @click="clickQuestionMenu(val)"
-        >
-          {{ val.question }}{{ val.levelId }}
-        </li>
-      </ul> -->
       <el-table
-        :data="tableData"
+        @row-click="clickRow"
+        :data="tableData.data"
+        border
         style="width: 100%"
         :row-class-name="tableRowClassName"
       >
-        <el-table-column prop="date" label="Date" width="180" />
-        <el-table-column prop="name" label="Name" width="180" />
-        <el-table-column prop="address" label="Address" />
+        <el-table-column
+          prop="title"
+          label="问题"
+          
+          header-align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="describe"
+          label="描述"
+          width="180"
+          header-align="center"
+        />
+        <el-table-column
+          prop="score"
+          label="分数"
+          width="80"
+          align="center"
+          header-align="center"
+          sortable
+        >
+          <template #default="scope">
+            <el-tag type="info" round disable-transitions>{{
+              scope.row.score
+            }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="level"
+          label="难度"
+          width="80"
+          align="center"
+          header-align="center"
+        >
+          <template #default="scope">
+            <el-tag
+              v-if="scope.row.level === '困难'"
+              type="danger"
+              disable-transitions
+              >{{ scope.row.level }}</el-tag
+            >
+            <el-tag
+              v-if="scope.row.level === '简单'"
+              type="success"
+              disable-transitions
+              >{{ scope.row.level }}</el-tag
+            >
+            <el-tag
+              v-if="scope.row.level === '中等'"
+              type="warning"
+              disable-transitions
+              >{{ scope.row.level }}</el-tag
+            >
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="type"
+          label="类型"
+          width="80"
+          align="center"
+          header-align="center"
+          ><template #default="scope">
+            <el-tag v-if="scope.row.type === '单选'" disable-transitions>{{
+              scope.row.type
+            }}</el-tag>
+            <el-tag
+              v-if="scope.row.type === '多选'"
+              type="success"
+              disable-transitions
+              >{{ scope.row.type }}</el-tag
+            >
+            <el-tag
+              v-if="scope.row.type === '简答'"
+              type="info"
+              disable-transitions
+              >{{ scope.row.type }}</el-tag
+            >
+          </template></el-table-column
+        >
       </el-table>
     </div>
   </div>
@@ -43,13 +111,21 @@ import { useRouter } from "vue-router";
 import link from "../../../api/link.js";
 import url from "../../../api/url.js";
 import code from "../../../api/code.js";
-import sortQuestion from "../../../util/sortQuestion.js"
+import sortQuestion from "../../../util/sortQuestion.js";
+import { ElMessage } from "element-plus";
 const ErrorCode = code;
 /**
  * 课程和对应的章节数据
  */
-
-const MenuData = reactive({});
+let question = {
+  id: "",
+  title: "",
+  describe: "",
+  score: "",
+  level: "",
+  type: "",
+};
+const MenuData = reactive({ data: [] }); //章节对应的表
 let getChapter = async () => {
   let response = await link(url.allChapter);
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
@@ -62,9 +138,7 @@ let getChapter = async () => {
     });
   });
   MenuData.data[0].chapters[0].current = true;
-  console.log(MenuData.data);
 };
-
 let clickChapterMenu = (val) => {
   MenuData.data.forEach((element) => {
     element.chapters.forEach((e) => {
@@ -74,54 +148,22 @@ let clickChapterMenu = (val) => {
   val.current = true;
   getQuestionByChapterId(val.id); //根据chapterid查询question
 };
-
 /**
  * 问题的列表
  */
-let question={
-  title:"",
-  describe:"",
-  score:"",
-  level:"",
-  type:""
-}
-const tableData = [
-];
+const tableData = reactive({ data: [] });
 const questionMenuData = reactive({});
 let getQuestionByChapterId = async (id) => {
   let response = await link(url.question.getQuestionByChapterId(id), "get");
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
     return ElMessage.error(response.data.msg);
   }
-  let data = response.data.data;
-  data.forEach((e)=>{
-    question.title=e.question
-    question.describe=e.describe
-    question.score=e.score
-    question.level=sortQuestion.sortQuestion
-  })
-  console.log(questionMenuData.data);
+  tableData.data = sortQuestion(response.data.data);
 };
-let clickQuestionMenu = (val) => {
-  MenuData.forEach((element) => {
-    element.children.forEach((e) => {
-      e.current = false;
-    });
-  });
-  val.current = true;
-  //TODO 根据questionid查询问题细节，进入答题界面
-  //传送过去的是一整个questionMenuData
+//TODO 鼠标点击题目事件
+let clickRow = (row, column, event) => {
+  // let response = await link(url.question.getQuestionById(row.id), "get");
 };
-
-let tableRowClassName = ({ row, rowIndex }) => {
-  if (rowIndex === 1) {
-    return "warning-row";
-  } else if (rowIndex === 3) {
-    return "success-row";
-  }
-  return "";
-};
-
 
 /**
  * 初始化
@@ -149,7 +191,7 @@ onMounted(() => {
   width: 15%;
   line-height: 40px;
   font-size: 20px;
-  color: rgb(240, 68, 68);
+  color: rgb(13, 13, 13);
   border-radius: 8px;
 }
 #Answer .subject-box .chapter-menu {
@@ -167,7 +209,7 @@ onMounted(() => {
   width: 10%;
   line-height: 40px;
   font-size: 15px;
-  color: rgb(231, 21, 21);
+  color: rgb(62, 60, 60);
   border-radius: 8px;
 }
 #Answer .subject-box .chapter-menu li:hover {
@@ -176,11 +218,5 @@ onMounted(() => {
 }
 #Answer .subject-box .chapter-menu .current {
   background-color: #9ed1f7;
-}
-.el-table .warning-row {
-  --el-table-tr-bg-color: var(--el-color-warning-light-9);
-}
-.el-table .success-row {
-  --el-table-tr-bg-color: var(--el-color-success-light-9);
 }
 </style>
