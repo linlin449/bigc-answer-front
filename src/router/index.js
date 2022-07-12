@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 const routes = [
   // 主页,即登录页
   {
-    path: "/",
+    path: "/login",
     name: "login",
     component: () => import("../views/Login.vue"),
   },
@@ -59,7 +59,7 @@ const routes = [
       {
         path: "favorite",
         name: "favoriteStudent",
-        component: () => import("../views/student/false/Index.vue"),
+        component: () => import("../views/student/favorite/favoriteStudent.vue"),
       },
     ],
   },
