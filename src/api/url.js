@@ -10,6 +10,22 @@ let url = {
     getInfo: (username) => {
       return "/api/student/info/" + username;
     },
+    getListByPage: (page) => {
+      return "/api/student/list/" + page
+    },
+    getListByTeacher: (username, page) => {
+      return "/api/teacher/students/" + username + "/list/" + page;
+    }
+  },
+  teacher: {
+    getInfo: (username) => {
+      return "/api/teacher/info/" + username;
+    },
+  },
+  admin: {
+    getInfo: (username) => {
+      return "/api/admin/info/" + username;
+    },
   },
   allChapter: "/api/chapter/", //得到全部的课程信息，返回数据格式是StudentAnswer的MenuData
   question: {

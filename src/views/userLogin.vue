@@ -3,75 +3,29 @@
     <div class="title">欢迎登录bigc物理答题系统!</div>
     <div class="login">
       <ul class="menu-tab">
-        <li
-          v-for="v in MenuData"
-          :class="{ current: v.current }"
-          :key="v.type"
-          @click="clickMenu(v)"
-        >
+        <li v-for="v in MenuData" :class="{ current: v.current }" :key="v.type" @click="clickMenu(v)">
           {{ v.txt }}
         </li>
       </ul>
-      <el-form
-        ref="ruleFormRef"
-        :model="ruleForm"
-        status-icon
-        :rules="rules"
-        class="demo-ruleForm"
-        size="large"
-      >
+      <el-form ref="ruleFormRef" :model="ruleForm" status-icon :rules="rules" class="demo-ruleForm" size="large">
         <el-form-item prop="username">
-          <el-input
-            v-model="ruleForm.username"
-            placeholder="工号"
-            type="text"
-            autocomplete="off"
-            maxlength="9"
-          />
+          <el-input v-model="ruleForm.username" placeholder="工号" type="text" autocomplete="off" maxlength="9" />
         </el-form-item>
         <el-form-item prop="password">
-          <el-input
-            v-model="ruleForm.password"
-            type="password"
-            placeholder="密码"
-            autocomplete="off"
-            minlength="6"
-            maxlength="15"
-          />
+          <el-input v-model="ruleForm.password" type="password" placeholder="密码" autocomplete="off" minlength="6"
+            maxlength="15" />
         </el-form-item>
 
         <el-form-item prop="code">
-          <el-input
-            class="code"
-            v-model="ruleForm.code"
-            type="text"
-            placeholder="验证码"
-            autocomplete="off"
-            maxlength="5"
-            minlength="5"
-          />
-          <el-image
-            class="login_code"
-            :src="imgBase64"
-            @click="refreshCode()"
-          />
+          <el-input class="code" v-model="ruleForm.code" type="text" placeholder="验证码" autocomplete="off" maxlength="5"
+            minlength="5" />
+          <el-image class="login_code" :src="imgBase64" @click="refreshCode()" />
         </el-form-item>
 
         <el-form-item>
-          <el-button
-            :disabled="btnbool"
-            type="primary"
-            class="login-btn block"
-            @click="submitForm(ruleFormRef)"
-          >
-            登录</el-button
-          >
-          <el-button
-            type="primary"
-            class="login-btn block"
-            @click="resetForm(ruleFormRef)"
-            >重置</el-button
-          >
+          <el-button :disabled="btnbool" type="primary" class="login-btn block" @click="submitForm(ruleFormRef)">
+            登录</el-button>
+          <el-button type="primary" class="login-btn block" @click="resetForm(ruleFormRef)">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -177,7 +131,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.validate(async (valid) => {
     //TODO 登录页面的修改
-    if (model.value === "teacher"){
+    if (model.value === "teacher") {
       let response = await link(url.login.teacher, "post", {
         username: ruleForm.username,
         password: ruleForm.password,
@@ -190,6 +144,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           message: response.data.msg,
           type: "success",
         });
+        store.commit("setRole", 2);
         store.commit("setToken", response.data.data.token);
         cookies.set(
           "token",
@@ -203,7 +158,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         //刷新验证码
         refreshCode();
       }
-    }else{
+    } else {
       let response = await link(url.login.admin, "post", {
         username: ruleForm.username,
         password: ruleForm.password,

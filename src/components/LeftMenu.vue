@@ -1,11 +1,5 @@
 <template>
-  <el-menu
-    :default-active="activeMenu"
-    class="side-menu"
-    unique-opened
-    :collapse="!$store.state.navBool"
-    @select="handelSelect"
-  >
+  <el-menu :default-active="activeMenu" class="side-menu" unique-opened @select="handelSelect">
     <template v-for="item in MenuData" :key="item.id">
       <el-sub-menu :index="item.index" v-if="item.children">
         <template #title>
@@ -47,7 +41,7 @@ import {
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
-const MenuData = ref([
+const MenuData = [
   {
     id: 1,
     name: "考题管理",
@@ -71,8 +65,8 @@ const MenuData = ref([
     index: "studentManage",
     icon: User,
     children: [
-      { id: 1, index: "studentAdmin", name: "查看老师", icon: View },
-      { id: 2, index: "studentAdminAdd", name: "新增老师", icon: Plus },
+      { id: 1, index: "studentAdmin", name: "查看学生", icon: View },
+      { id: 2, index: "studentAdminAdd", name: "新增学生", icon: Plus },
     ],
   },
   {
@@ -85,7 +79,7 @@ const MenuData = ref([
       { id: 2, index: "teacherAdminAdd", name: "新增老师", icon: Plus },
     ],
   },
-]);
+];
 // 菜单默认激活项
 const activeMenu = ref("");
 // 菜单子项被点击

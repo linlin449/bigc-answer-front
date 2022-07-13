@@ -6,13 +6,9 @@
         <ul class="list">
           <li class="logo"><span>Bigc-Answer</span></li>
 
-          <li
-            class="right"
-            @mouseenter="flag = !flag"
-            @mouseleave="flag = !flag"
-          >
+          <li class="right" @mouseenter="flag = !flag" @mouseleave="flag = !flag">
             <svg-icon class-name="size-icon" icon="user" />
-            <span>{{ studentInfo.data.name }}</span>
+            <span>{{ userInfo.data.name }}</span>
             <div class="msg" v-if="flag">
               <p @click="manage()">个人信息</p>
               <p class="exit" @click="exit()">退出</p>
@@ -40,18 +36,43 @@ let flag = ref(false);
 let handelSelect = (index) => {
   router.push({ name: index });
 };
-let manage = () => {};
-let exit = () => {};
-// 学生信息
-const studentInfo = reactive({ data: {} });
-const getStudentInfo = async () => {
-  let response = await link(url.student.getInfo(store.state.username), "get");
-  if (response.data.code === ErrorCode.NORMAL_SUCCESS) {
-    studentInfo.data = response.data.data.student;
+let manage = () => { };
+let exit = () => { };
+
+const userInfo = reactive({ data: {} })
+const getUserInfo = async () => {
+  let path = '';
+  switch (store.state.role) {
+    case 1:
+      path = url.student.getInfo(store.state.username);
+      break;
+    case 2:
+      path = url.teacher.getInfo(store.state.username);
+      break;
+    case 3:
+      path = url.admin.getInfo(store.state.username);
+      break;
+    default:
+      return;
   }
-};
+  const response = await link(path, "get");
+  if (response.data.code === ErrorCode.NORMAL_SUCCESS) {
+    switch (store.state.role) {
+      case 1:
+        userInfo.data = response.data.data.student;
+        break;
+      case 2:
+        userInfo.data = response.data.data;
+        break;
+      case 3:
+        userInfo.data = response.data.data;
+        userInfo.data.name = userInfo.data.username;
+        break;
+    }
+  }
+}
 onMounted(() => {
-  getStudentInfo();
+  getUserInfo();
 });
 </script>
 
@@ -71,7 +92,7 @@ onMounted(() => {
 
 #student .padding-50 {
   margin: 0 auto;
-  padding-right:50px;
+  padding-right: 50px;
   background-color: #fff;
 }
 

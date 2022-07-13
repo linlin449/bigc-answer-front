@@ -229,6 +229,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           message: response.data.msg,
           type: "success",
         });
+        store.commit("setRole", 1);
         store.commit("setToken", response.data.data.token);
         cookies.set("token", response.data.data.token, new Date(response.data.data.expire));
         router.push({ name: "student" }); //增加cookies

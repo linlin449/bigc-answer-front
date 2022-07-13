@@ -3,12 +3,16 @@ import VuexPersistence from "vuex-persist";
 export default createStore({
   state: {
     username: "",
+    role: 1, // 学生 - 1 老师 - 2 管理员 - 3
     token: "",
   },
   getters: {},
   mutations: {
     setUsername(state, val) {
       state.username = val;
+    },
+    setRole(state, val) {
+      state.role = val;
     },
     setToken(state, val) {
       state.token = val;

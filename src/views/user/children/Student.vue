@@ -1,214 +1,74 @@
 <template>
-  <div id="Answer">
-    <h3 id="titleone">查看学生</h3>
-    <div class="question-box">
-      <el-table
-        @row-click="clickRow"
-        :data="tableData.data"
-        border
-        style="width: 100%"
-        :row-class-name="tableRowClassName"
-      >
-        <el-table-column
-          prop="title"
-          label="问题"
-          
-          header-align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="describe"
-          label="描述"
-          width="180"
-          header-align="center"
-        />
-        <el-table-column
-          prop="score"
-          label="分数"
-          width="80"
-          align="center"
-          header-align="center"
-          sortable
-        >
-          <template #default="scope">
-            <el-tag type="info" round disable-transitions>{{
-              scope.row.score
-            }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="level"
-          label="难度"
-          width="80"
-          align="center"
-          header-align="center"
-        >
-          <template #default="scope">
-            <el-tag
-              v-if="scope.row.level === '困难'"
-              type="danger"
-              disable-transitions
-              >{{ scope.row.level }}</el-tag
-            >
-            <el-tag
-              v-if="scope.row.level === '简单'"
-              type="success"
-              disable-transitions
-              >{{ scope.row.level }}</el-tag
-            >
-            <el-tag
-              v-if="scope.row.level === '中等'"
-              type="warning"
-              disable-transitions
-              >{{ scope.row.level }}</el-tag
-            >
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="type"
-          label="类型"
-          width="80"
-          align="center"
-          header-align="center"
-          ><template #default="scope">
-            <el-tag v-if="scope.row.type === '单选'" disable-transitions>{{
-              scope.row.type
-            }}</el-tag>
-            <el-tag
-              v-if="scope.row.type === '多选'"
-              type="success"
-              disable-transitions
-              >{{ scope.row.type }}</el-tag
-            >
-            <el-tag
-              v-if="scope.row.type === '简答'"
-              type="info"
-              disable-transitions
-              >{{ scope.row.type }}</el-tag
-            >
-          </template></el-table-column
-        >
-      </el-table>
-    </div>
-  </div>
+  <el-card class="box-card">
+    <el-table :data="studentList.data.records">
+      <el-table-column prop="username" label="用户名" width="180" />
+      <el-table-column prop="name" label="姓名" width="180" />
+      <el-table-column prop="email" label="邮箱" width="180" />
+      <el-table-column label="操作">
+        <template #default="scope">
+          <el-button v-show="store.state.role == 3" size="small" @click="handleEdit(scope.$index, scope.row)">编辑
+          </el-button>
+          <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination v-model:currentPage="studentList.data.current" :page-size="studentList.data.size"
+      layout="prev, pager, next" :total="studentList.data.total" @current-change="handleCurrentChange" />
+  </el-card>
 </template>
 
 <script setup>
-import { reactive, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import link from "../../../api/link.js";
-import url from "../../../api/url.js";
-import code from "../../../api/code.js";
-import sortQuestion from "../../../util/sortQuestion.js";
-import { ElMessage } from "element-plus";
-const ErrorCode = code;
-/**
- * 课程和对应的章节数据
- */
-let question = {
-  id: "",
-  title: "",
-  describe: "",
-  score: "",
-  level: "",
-  type: "",
-};
-const MenuData = reactive({ data: [] }); //章节对应的表
-let getChapter = async () => {
-  let response = await link(url.allChapter);
-  if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
-    return ElMessage.error(response.data.msg);
-  }
-  MenuData.data = response.data.data;
-  MenuData.data.forEach((e) => {
-    e.chapters.forEach((e1) => {
-      e1.current = false;
-    });
-  });
-  MenuData.data[0].chapters[0].current = true;
-};
-let clickChapterMenu = (val) => {
-  if(val.current) return
-  MenuData.data.forEach((element) => {
-    element.chapters.forEach((e) => {
-      e.current = false;
-    });
-  });
-  val.current = true;
-  getQuestionByChapterId(val.id); //根据chapterid查询question
-};
-/**
- * 问题的列表
- */
-const tableData = reactive({ data: [] });
-const questionMenuData = reactive({});
-let getQuestionByChapterId = async (id) => {
-  let response = await link(url.question.getQuestionByChapterId(id), "get");
-  if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
-    return ElMessage.error(response.data.msg);
-  }
-  tableData.data = sortQuestion(response.data.data);
-};
-//TODO 鼠标点击题目事件
-let clickRow = (row, column, event) => {
-  // let response = await link(url.question.getQuestionById(row.id), "get");
-};
+import { ElMessage } from 'element-plus';
+import { onMounted, reactive } from 'vue';
+import { useStore } from 'vuex';
+import code from "../../../api/code";
+import link from '../../../api/link';
+import url from '../../../api/url';
 
-/**
- * 初始化
- */
+const store = useStore();
+const ErrorCode = code;
+
+const studentList = reactive({ data: {} })
+const getStudentList = async (page) => {
+  let path = url.student.getListByTeacher(store.state.username, page);
+  if (store.state.role == 3) path = url.student.getListByPage(page);
+  const response = await link(path, "get")
+  if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
+    return ElMessage.error(response.data.msg);
+  }
+  studentList.data = response.data.data;
+}
+
+//页码被更换
+const handleCurrentChange = (val) => {
+  getStudentList(val);
+}
+
+//删除学生
+const handleDelete = (val) => {
+  console.log(studentList.data.records[val]);
+  if (store.state.role == 2) {
+    //老师
+    //TODO 断开老师与该学生的联系(TeacherStudent 表)
+  } else if (store.state.role == 3) {
+    //管理员
+    //TODO 删除学生的所有信息(Student TeacherStudent 表)
+  }
+}
+
+//编辑学生
+const handleEdit = (val) => {
+  console.log(studentList.data.records[val]);
+}
+
 onMounted(() => {
-  getChapter();
-  getQuestionByChapterId(1);
+  getStudentList(1);
 });
 </script>
 
 <style scoped>
-#titleone{
-  margin-bottom: 20px;
-}
-#Answer {
-  width: 980px;
-  margin: 0 auto;
-}
-#Answer .subject-box {
-  margin: 20px;
-}
-#Answer .subject-box .title {
-  cursor: pointer;
-  margin-top: 10px;
-  margin-left: 10px;
-  background-color: rgba(228, 238, 41, 0.5);
-  text-align: center;
-  width: 15%;
-  line-height: 40px;
-  font-size: 20px;
-  color: rgb(13, 13, 13);
-  border-radius: 8px;
-}
-#Answer .subject-box .chapter-menu {
-  padding: 0;
-}
-
-#Answer .subject-box .chapter-menu {
-  padding: 0;
-}
-#Answer .subject-box .chapter-menu li {
-  text-align: center;
-  cursor: pointer;
-  display: inline-block;
-  margin: 10px;
-  width: 10%;
-  line-height: 40px;
-  font-size: 15px;
-  color: rgb(62, 60, 60);
-  border-radius: 8px;
-}
-#Answer .subject-box .chapter-menu li:hover {
-  background-color: #9ed1f7;
-  transition: all 1.5s ease;
-}
-#Answer .subject-box .chapter-menu .current {
-  background-color: #9ed1f7;
+.box-card {
+  width: 90%;
+  margin-left: 5%;
 }
 </style>
