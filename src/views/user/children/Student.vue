@@ -1,18 +1,6 @@
 <template>
   <div id="Answer">
-    <div v-for="v in MenuData.data" class="subject-box" :key="v.subject_id">
-      <h5 class="title">{{ v.subjectname }}</h5>
-      <ul class="chapter-menu">
-        <li
-          v-for="val in v.chapters"
-          :class="{ current: val.current }"
-          :key="val.id"
-          @click="clickChapterMenu(val)"
-        >
-          {{ val.name }}
-        </li>
-      </ul>
-    </div>
+    <h3 id="titleone">查看学生</h3>
     <div class="question-box">
       <el-table
         @row-click="clickRow"
@@ -176,6 +164,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
+#titleone{
+  margin-bottom: 20px;
+}
 #Answer {
   width: 980px;
   margin: 0 auto;

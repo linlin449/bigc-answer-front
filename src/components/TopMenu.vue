@@ -5,10 +5,7 @@
       <el-col :span="24">
         <ul class="list">
           <li class="logo"><span>Bigc-Answer</span></li>
-          <li @click="handelSelect('answerStudent')">答题</li>
-          <li @click="handelSelect('examStudent')">考试</li>
-          <li @click="handelSelect('analysisStudent')">分析</li>
-          <li @click="handelSelect('favoriteStudent')">收藏</li>
+
           <li
             class="right"
             @mouseenter="flag = !flag"
@@ -24,11 +21,6 @@
         </ul>
       </el-col>
     </el-row>
-    <!--路由区域-->
-    <div class="main">
-      <router-view></router-view>
-    </div>
-    <myfooter></myfooter>
   </div>
 </template>
 
@@ -36,10 +28,10 @@
 import { onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
-import code from "../../api/code";
-import link from "../../api/link";
-import url from "../../api/url";
-import myfooter from "../../components/myFooter.vue";
+import code from "../api/code";
+import link from "../api/link";
+import url from "../api/url";
+import myfooter from "../components/myFooter.vue";
 
 const ErrorCode = code;
 const store = useStore();
@@ -79,8 +71,7 @@ onMounted(() => {
 
 #student .padding-50 {
   margin: 0 auto;
-  padding: 0 50px;
-  box-shadow: 0 0 10px 4px rgba(1, 149, 255, 0.1);
+  padding-right:50px;
   background-color: #fff;
 }
 

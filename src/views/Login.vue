@@ -220,7 +220,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
         {
           username: ruleForm.username, password: ruleForm.password,
           vercode: ruleForm.code, verkey: identifyCode.value
-        },//md5(ruleForm.password).value }
+        },
       );
       // store.getters.set
       store.commit("setUsername", ruleForm.username);

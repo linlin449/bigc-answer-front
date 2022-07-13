@@ -1,18 +1,27 @@
 <template>
   <div id="Answer">
-    <div v-for="v in MenuData.data" class="subject-box" :key="v.subject_id">
-      <h5 class="title">{{ v.subjectname }}</h5>
-      <ul class="chapter-menu">
-        <li
-          v-for="val in v.chapters"
-          :class="{ current: val.current }"
-          :key="val.id"
-          @click="clickChapterMenu(val)"
-        >
-          {{ val.name }}
-        </li>
-      </ul>
-    </div>
+    <el-dropdown
+      v-for="v in MenuData.data"
+      class="subject-box"
+      :key="v.subject_id"
+    >
+      <span class="el-dropdown-link">
+        {{ v.subjectname }}
+        <el-icon class="el-icon--right">
+          <arrow-down />
+        </el-icon>
+      </span>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item
+            v-for="val in v.chapters"
+            :key="val.id"
+            @click="clickChapterMenu(val)"
+            >{{ val.name }}</el-dropdown-item
+          >
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
     <div class="question-box">
       <el-table
         @row-click="clickRow"
@@ -24,7 +33,6 @@
         <el-table-column
           prop="title"
           label="问题"
-          
           header-align="center"
           show-overflow-tooltip
         />
@@ -98,21 +106,101 @@
               disable-transitions
               >{{ scope.row.type }}</el-tag
             >
-          </template></el-table-column
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          width="150"
+          align="center"
+          header-align="center"
         >
+          <template #default="scope">
+            <el-button size="small" @click="handleEdit(scope.$index, scope.row)"
+              >编辑</el-button
+            >
+            <el-button
+              size="small"
+              type="danger"
+              @click="handleDelete(scope.$index, scope.row)"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
       </el-table>
     </div>
+    <el-dialog
+    v-model="dialogVisible"
+    title="问题详情"
+    width="30%"
+    :before-close="handleClose"
+  >
+    <el-form :model="form" label-width="120px">
+   
+   <el-form-item label="问题">
+      <el-input v-model="form.desc" type="textarea" />
+    </el-form-item>
+    <el-form-item label="问题">
+      <el-input v-model="form.desc" type="textarea" />
+    </el-form-item>
+    <el-form-item label="课程">
+      <el-select v-model="form.region" placeholder="please select your zone">
+        <el-option label="Zone one" value="shanghai" />
+        <el-option label="Zone two" value="beijing" />
+      </el-select>
+    </el-form-item>
+    <el-form-item label="章节">
+      <el-select v-model="form.region" placeholder="please select your zone">
+        <el-option label="Zone one" value="shanghai" />
+        <el-option label="Zone two" value="beijing" />
+      </el-select>
+    </el-form-item>
+    <el-form-item label="题型">
+      <el-radio-group v-model="form.resource">
+        <el-radio label="单选" />
+        <el-radio label="多选" />
+        <el-radio label="简答" />
+      </el-radio-group>
+    </el-form-item>
+    <el-form-item label="难度">
+      <el-radio-group v-model="form.resource">
+        <el-radio label="简单" />
+        <el-radio label="中等" />
+        <el-radio label="困难" />
+      </el-radio-group>
+    </el-form-item>
+    <el-form-item label="选择题答案">
+      <el-input   placeholder="A" clearable/>
+      <el-input v-model="form.name"  placeholder="B" clearable/>
+      <el-input v-model="form.name"  placeholder="C" clearable/>
+      <el-input v-model="form.name"  placeholder="D" clearable/>
+      <el-input v-model="form.name"  placeholder="D" clearable/>
+      <el-input v-model="form.name"  placeholder="D" clearable/>
+    </el-form-item>
+    <el-form-item label="答案">
+      <el-input v-model="form.name"  placeholder="A" clearable/>
+    </el-form-item>
+  </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >确定修改</el-button
+        >
+      </span>
+    </template>
+  </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { reactive, watch, onMounted } from "vue";
+import { reactive, watch, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import link from "../../../api/link.js";
 import url from "../../../api/url.js";
 import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
+import { ArrowDown } from "@element-plus/icons-vue";
 const ErrorCode = code;
 /**
  * 课程和对应的章节数据
@@ -140,7 +228,7 @@ let getChapter = async () => {
   MenuData.data[0].chapters[0].current = true;
 };
 let clickChapterMenu = (val) => {
-  if(val.current) return
+  if (val.current) return;
   MenuData.data.forEach((element) => {
     element.chapters.forEach((e) => {
       e.current = false;
@@ -165,7 +253,24 @@ let getQuestionByChapterId = async (id) => {
 let clickRow = (row, column, event) => {
   // let response = await link(url.question.getQuestionById(row.id), "get");
 };
-
+const form = reactive({
+  name: '',
+  region: '',
+  date1: '',
+  date2: '',
+  delivery: false,
+  type: [],
+  resource: '',
+  desc: '',
+})
+let dialogVisible = ref(false) //编辑表单是否可见
+const handleEdit = (index, row) => {
+    console.log(row)
+ dialogVisible.value=!dialogVisible.value
+};
+const handleDelete = (index, row) => {
+  console.log(index, row);
+};
 /**
  * 初始化
  */
@@ -219,5 +324,12 @@ onMounted(() => {
 }
 #Answer .subject-box .chapter-menu .current {
   background-color: #9ed1f7;
+}
+.el-dropdown-link {
+  font-weight: bold;
+  font-size: larger;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 </style>

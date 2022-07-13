@@ -1,23 +1,20 @@
-import { createStore } from 'vuex'
-import VuexPersistence from 'vuex-persist'
+import { createStore } from "vuex";
+import VuexPersistence from "vuex-persist";
 export default createStore({
   state: {
-    username: '',
-    token: '',
+    username: "",
+    token: "",
   },
-  getters: {
-  },
+  getters: {},
   mutations: {
     setUsername(state, val) {
-      state.username = val
+      state.username = val;
     },
     setToken(state, val) {
-      state.token = val
-    }
+      state.token = val;
+    },
   },
-  actions: {
-  },
-  modules: {
-  },
-  plugins: [new VuexPersistence().plugin]
-})
+  actions: {},
+  modules: {},
+  plugins: [new VuexPersistence().plugin],
+});

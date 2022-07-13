@@ -4,7 +4,7 @@
     style="width: 100%"
     :row-class-name="tableRowClassName"
   >
-    <el-table-column prop="date" label="Date" width="180" />
+    
     <el-table-column prop="name" label="Name" width="180" />
     <el-table-column prop="address" label="Address" />
   </el-table>
@@ -32,11 +32,12 @@ const tableRowClassName = ({
   return ''
 }
 
-const tableData: User[] = [
+let tableData: User[] = [
   {
     date: '2016-05-03',
-    name: 'Tom',
+    
     address: 'No. 189, Grove St, Los Angeles',
+    name: 'Tom',
   },
   {
     date: '2016-05-02',
