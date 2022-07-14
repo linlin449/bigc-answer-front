@@ -15,6 +15,12 @@ let url = {
     },
     getListByTeacher: (username, page) => {
       return "/api/teacher/students/" + username + "/list/" + page;
+    },
+    deleteTeacherStudent: (teacherUsername, studentId) => {
+      return "/api/teacher/" + teacherUsername + "/deletestudent/" + studentId;
+    },
+    addTeacherStudent: (teacherUsername, studentId) => {
+      return "/api/teacher/" + teacherUsername + "/addstudent/" + studentId;
     }
   },
   teacher: {
@@ -36,6 +42,9 @@ let url = {
     getQuestionById: (question_id) => {
       return "/api/question/" + question_id;
     },
+    getStudentQuestionInfo: (username) => {
+      return "/api/question/info/student/" + username;
+    }
   },
 };
 
