@@ -64,6 +64,7 @@ import {
   onMounted,
 } from "vue";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
+
 import { useRouter } from "vue-router";
 import link from "../../../api/link.js";
 import url from "../../../api/url.js";
@@ -71,6 +72,7 @@ import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
+
 let form = ref({
   //表单数据初始化
   studentName: null,
@@ -116,11 +118,8 @@ const handleCreated = (editor) => {
   padding: 0px 40px;
   width: 400px;
 }
-#box{
-    width: 980px;
+#box {
+  width: 980px;
 }
-.w-e-bar-item{
-    width: 100px;
-    display: inline-block;
-}
+
 </style>
