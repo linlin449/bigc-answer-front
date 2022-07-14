@@ -57,7 +57,12 @@ const routes = [
       {
         path: "question",
         name: "questionAdmin",
-        component: () => import("../views/user/children/answer.vue"),
+        component: () => import("../views/user/children/question.vue"),
+      },
+      {
+        path: "question",
+        name: "questionAdminAdd",
+        component: () => import("../views/user/children/questionadd.vue"),
       },
     ]
   }
