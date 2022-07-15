@@ -44,8 +44,24 @@ let url = {
     },
     getStudentQuestionInfo: (username) => {
       return "/api/question/info/student/" + username;
-    }
+    },
+    update:"/api/question/update",
+    add:""
   },
+  questionOption:{
+    add:"/api/option/add",
+    get:(questionId)=>{
+      return "/api/option/question/"+questionId;
+    },
+    update:"/api/option/update"
+  },
+  questionRightAnswer:{
+    add:"/api/rightanswer/add",
+    get:(questionId)=>{
+      return "/api/rightanswer/question/"+questionId;
+    },
+    update:"/api/rightanswer/update"
+  }
 };
 
 export default url;

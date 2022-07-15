@@ -202,6 +202,7 @@ import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 const ErrorCode = code;
+const store = useStore();
 /**
  * 课程和对应的章节数据
  */
@@ -265,8 +266,8 @@ const form = reactive({
 })
 let dialogVisible = ref(false) //编辑表单是否可见
 const handleEdit = (index, row) => {
-    console.log(row)
- dialogVisible.value=!dialogVisible.value
+store.commit("setIsAdd",false)
+router.push({ name: "questionAdminAdd" });
 };
 const handleDelete = (index, row) => {
   console.log(index, row);

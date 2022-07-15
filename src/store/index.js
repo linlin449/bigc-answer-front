@@ -5,6 +5,7 @@ export default createStore({
     username: "",
     role: 1, // 学生 - 1 老师 - 2 管理员 - 3
     token: "",
+    isAdd:true//true 是添加题目，不是修改题目，
   },
   getters: {},
   mutations: {
@@ -17,6 +18,9 @@ export default createStore({
     setToken(state, val) {
       state.token = val;
     },
+    setIsAdd(state,val){
+      state.isAdd=val
+    }
   },
   actions: {},
   modules: {},
