@@ -171,6 +171,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
           message: response.data.msg,
           type: "success",
         });
+        store.commit("setRole", 3);
         store.commit("setToken", response.data.data.token);
         cookies.set(
           "token",

@@ -12,7 +12,7 @@
     </el-dialog>
 </template>
 <script setup>
-import { computed, defineProps, reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import link from '../api/link';
 import url from '../api/url';
 const props = defineProps({

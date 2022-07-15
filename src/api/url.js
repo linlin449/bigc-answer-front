@@ -27,6 +27,7 @@ let url = {
     getInfo: (username) => {
       return "/api/teacher/info/" + username;
     },
+    getList: "/api/teacher/list",
   },
   admin: {
     getInfo: (username) => {
