@@ -43,7 +43,7 @@ const routes = [
     path: "/user",
     name: "user",
     component: () => import("../views/user/Index.vue"),
-    children:[
+    children: [
       {
         path: "student",
         name: "studentAdmin",
@@ -63,6 +63,11 @@ const routes = [
         path: "question",
         name: "questionAdminAdd",
         component: () => import("../views/user/children/questionadd.vue"),
+      },
+      {
+        path: "teacher",
+        name: "teacherAdmin",
+        component: () => import("../views/user/children/Teacher.vue"),
       },
     ]
   }
