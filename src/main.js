@@ -7,7 +7,6 @@ import 'element-plus/dist/index.css'
 import VueCookies from 'vue3-cookies'
 import './router/permission.js'
 import SvgIcon from './components/SvgIcon/index.vue'// svg组件
-import '../node_modules/@wangeditor/editor/dist/css/style.css'//引入样式
 const app = createApp(App)
 
 

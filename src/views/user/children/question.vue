@@ -201,6 +201,7 @@ import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
+import { useStore } from 'vuex';
 const ErrorCode = code;
 const store = useStore();
 /**

@@ -45,7 +45,7 @@ const MenuData = [
   {
     id: 1,
     name: "考题管理",
-    index: "questionAdmin",
+    index: "question",
     icon: Notebook,
     children:  [
       { id: 1, index: "questionAdmin", name: "查看考题", icon: DocumentChecked },
