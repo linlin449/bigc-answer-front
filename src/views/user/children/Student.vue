@@ -1,13 +1,19 @@
 <template>
   <div>
     <el-card class="box-card">
+      <template v-if="store.state.role == 2">
+        <!-- 仅老师身份可见 -->
+        <el-input placeholder="学生用户名" class="input-username" v-model="studentUsername" />
+        <el-button type="primary" @click="handelClick">添加学生</el-button>
+      </template>
       <el-table :data="studentList.data.records">
         <el-table-column prop="username" label="用户名" width="180" />
         <el-table-column prop="name" label="姓名" width="180" />
         <el-table-column prop="email" label="邮箱" width="180" />
         <el-table-column label="操作">
           <template #default="scope">
-            <el-button v-show="store.state.role == 3" size="small" @click="handleEdit(scope.$index, scope.row)">编辑
+            <!-- 仅管理员身份可见 -->
+            <el-button v-if="store.state.role == 3" size="small" @click="handleEdit(scope.$index, scope.row)">编辑
             </el-button>
             <el-button size="small"
               @click="analysShow = true; analysUsername = studentList.data.records[scope.$index].username">做题分析
@@ -42,8 +48,9 @@ const getStudentList = async (page) => {
   const response = await link(path, "get")
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
     return ElMessage.error(response.data.msg);
+  } else {
+    studentList.data = response.data.data;
   }
-  studentList.data = response.data.data;
 }
 
 //页码被更换
@@ -76,9 +83,7 @@ const handleDelete = (val) => {
         { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
       ).then(() => {
         //确认删除
-        if (delTeacherStudent(store.state.username, studentList.data.records[val].id)) {
-          getStudentList(1);
-        }
+        delTeacherStudent(store.state.username, studentList.data.records[val].id)
       })
       .catch(() => {
         //取消删除
@@ -97,11 +102,36 @@ const handleEdit = (val) => {
 onMounted(() => {
   getStudentList(1);
 });
+
+//添加学生
+const studentUsername = ref("")
+const addStudentForTeacher = async (teacherUsername, studentUsername) => {
+  const response = await link(url.student.addTeacherStudentByUsername(teacherUsername, studentUsername), "get");
+  if (response.data.code == ErrorCode.NORMAL_SUCCESS) {
+    ElMessage.success(response.data.msg);
+    getStudentList(1);
+  } else {
+    ElMessage.error(response.data.msg);
+  }
+}
+const handelClick = () => {
+  if (studentUsername.value.length > 0) {
+    addStudentForTeacher(store.state.username, studentUsername.value)
+  } else {
+    ElMessage.error("请输入用户名");
+  }
+}
 </script>
 
 <style scoped>
 .box-card {
   width: 90%;
   margin-left: 5%;
+}
+
+.input-username {
+  margin-right: 20px;
+  margin-bottom: 20px;
+  width: 300px;
 }
 </style>

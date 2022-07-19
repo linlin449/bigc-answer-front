@@ -19,8 +19,11 @@ let url = {
     deleteTeacherStudent: (teacherUsername, studentId) => {
       return "/api/teacher/" + teacherUsername + "/deletestudent/" + studentId;
     },
-    addTeacherStudent: (teacherUsername, studentId) => {
-      return "/api/teacher/" + teacherUsername + "/addstudent/" + studentId;
+    addTeacherStudentById: (teacherUsername, studentId) => {
+      return "/api/teacher/" + teacherUsername + "/addstudent/id/" + studentId;
+    },
+    addTeacherStudentByUsername: (teacherUsername, studentUsername) => {
+      return "/api/teacher/" + teacherUsername + "/addstudent/username/" + studentUsername;
     }
   },
   teacher: {
@@ -28,6 +31,10 @@ let url = {
       return "/api/teacher/info/" + username;
     },
     getList: "/api/teacher/list",
+    update: "/api/teacher/update",
+    deleteTeacher: (tid) => {
+      return "/api/teacher/delete/" + tid
+    },
   },
   admin: {
     getInfo: (username) => {
@@ -46,22 +53,22 @@ let url = {
     getStudentQuestionInfo: (username) => {
       return "/api/question/info/student/" + username;
     },
-    update:"/api/question/update",
-    add:""
+    update: "/api/question/update",
+    add: ""
   },
-  questionOption:{
-    add:"/api/option/add",
-    get:(questionId)=>{
-      return "/api/option/question/"+questionId;
+  questionOption: {
+    add: "/api/option/add",
+    get: (questionId) => {
+      return "/api/option/question/" + questionId;
     },
-    update:"/api/option/update"
+    update: "/api/option/update"
   },
-  questionRightAnswer:{
-    add:"/api/rightanswer/add",
-    get:(questionId)=>{
-      return "/api/rightanswer/question/"+questionId;
+  questionRightAnswer: {
+    add: "/api/rightanswer/add",
+    get: (questionId) => {
+      return "/api/rightanswer/question/" + questionId;
     },
-    update:"/api/rightanswer/update"
+    update: "/api/rightanswer/update"
   }
 };
 
