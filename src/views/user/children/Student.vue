@@ -73,8 +73,17 @@ const delTeacherStudent = async (teacherUsername, studentId) => {
   }
 }
 
+//删除学生所有信息
+const deleteStudent = async (username) => {
+  const response = await link(url.student.deleteStudent(username), "get");
+  if (response.data.code == ErrorCode.NORMAL_SUCCESS) {
+    ElMessage.success(response.data.msg);
+    getStudentList(1);
+  } else {
+    ElMessage.error(response.data.msg);
+  }
+}
 const handleDelete = (val) => {
-  console.log(studentList.data.records[val]);
   if (store.state.role == 2) {
     //老师
     ElMessageBox.confirm
@@ -90,7 +99,20 @@ const handleDelete = (val) => {
       })
   } else if (store.state.role == 3) {
     //管理员
-    //TODO 删除学生的所有信息(Student TeacherStudent 表)
+    //删除学生的所有信息(Student TeacherStudent 表)
+    ElMessageBox.confirm
+      (
+        '确认删除该学生? 此操作将删除该学生的所有信息,且不可恢复', '警告',
+        { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
+      ).then(() => {
+        //确认删除
+        deleteStudent(studentList.data.records[val].username)
+      })
+      .catch(() => {
+        //取消删除
+      })
+
+
   }
 }
 
