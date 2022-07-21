@@ -27,7 +27,12 @@ let url = {
     },
     addTeacherStudentByUsername: (teacherUsername, studentUsername) => {
       return "/api/teacher/" + teacherUsername + "/addstudent/username/" + studentUsername;
-    }
+    },
+    resetPassword: (sid) => {
+      return "/api/student/resetpassword/" + sid
+    },
+    update: "/api/student/update",
+    addStudent: "/api/student/add",
   },
   teacher: {
     getInfo: (username) => {

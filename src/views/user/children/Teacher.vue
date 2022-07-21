@@ -65,9 +65,9 @@
 <script setup>
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
-import code from '../../../api/code';
-import link from '../../../api/link';
-import url from '../../../api/url';
+import code from '@/api/code';
+import link from '@/api/link';
+import url from '@/api/url';
 
 const ErrorCode = code
 
