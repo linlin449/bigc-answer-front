@@ -1,5 +1,5 @@
 <template>
-    <UserAddVue :user-role="1"></UserAddVue>
+    <UserAddVue :user-role="2"></UserAddVue>
 </template>
 <script setup>
 import UserAddVue from './components/UserAdd.vue';

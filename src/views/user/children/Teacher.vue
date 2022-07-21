@@ -34,6 +34,9 @@
           <el-input v-model="editInfo.phone" autocomplete="off" />
         </el-form-item>
         <el-form-item>
+          <el-button type="warning" plain @click="resetPassword">重置密码</el-button>
+        </el-form-item>
+        <el-form-item>
           <el-button type="primary" @click="updateTeacherInfo">修改</el-button>
           <el-button @click="editVisible = false">取消</el-button>
         </el-form-item>
@@ -60,11 +63,11 @@
 </template>
 
 <script setup>
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
-import code from '../../../api/code';
-import link from '../../../api/link';
-import url from '../../../api/url';
+import code from '@/api/code';
+import link from '@/api/link';
+import url from '@/api/url';
 
 const ErrorCode = code
 
@@ -130,13 +133,42 @@ const updateTeacher = async (data) => {
   }
 }
 
+//重置老师密码
+const resetTeacherPassword = async (teacherid) => {
+  const response = await link(url.teacher.resetPassword(teacherid), "get");
+  if (response.data.code == ErrorCode.NORMAL_SUCCESS) {
+    ElNotification({
+      title: '重置成功',
+      message: `已将该老师密码重置为 <strong><i>${response.data.data}</i></strong>`,
+      duration: 0,
+      dangerouslyUseHTMLString: true,
+    })
+  } else {
+    ElMessage.error(response.data.msg);
+  }
+}
+
+const resetPassword = () => {
+  const info = teacherList.data.data[editInfo.index];
+  ElMessageBox.confirm
+    (
+      '确认重置该老师的密码?', '警告',
+      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
+    ).then(() => {
+      //确认
+      resetTeacherPassword(info.id)
+    })
+    .catch(() => {
+      //取消
+    })
+}
 //删除老师
 const delTeacher = async (tid) => {
   const response = await link(url.teacher.deleteTeacher(tid), "get");
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
     ElMessage.error(response.data.msg);
   } else {
-    ElMessage.error(response.data.msg);
+    ElMessage.success(response.data.msg);
     getTeacherList();
   }
 }

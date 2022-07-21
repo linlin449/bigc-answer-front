@@ -69,6 +69,11 @@ const routes = [
         name: "teacherAdmin",
         component: () => import("../views/user/children/Teacher.vue"),
       },
+      {
+        path: "teacheradd",
+        name: "teacherAdminAdd",
+        component: () => import("../views/user/children/TeacherAdd.vue"),
+      },
     ]
   }
 ];

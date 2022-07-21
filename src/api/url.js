@@ -16,6 +16,9 @@ let url = {
     getListByTeacher: (username, page) => {
       return "/api/teacher/students/" + username + "/list/" + page;
     },
+    deleteStudent: (username) => {
+      return "/api/student/delete/" + username;
+    },
     deleteTeacherStudent: (teacherUsername, studentId) => {
       return "/api/teacher/" + teacherUsername + "/deletestudent/" + studentId;
     },
@@ -24,7 +27,12 @@ let url = {
     },
     addTeacherStudentByUsername: (teacherUsername, studentUsername) => {
       return "/api/teacher/" + teacherUsername + "/addstudent/username/" + studentUsername;
-    }
+    },
+    resetPassword: (sid) => {
+      return "/api/student/resetpassword/" + sid
+    },
+    update: "/api/student/update",
+    addStudent: "/api/student/add",
   },
   teacher: {
     getInfo: (username) => {
@@ -35,6 +43,10 @@ let url = {
     deleteTeacher: (tid) => {
       return "/api/teacher/delete/" + tid
     },
+    addTeacher: "/api/teacher/add",
+    resetPassword: (tid) => {
+      return "/api/teacher/resetpassword/" + tid
+    }
   },
   subject:{
     getall:"/api/subject/getall"
