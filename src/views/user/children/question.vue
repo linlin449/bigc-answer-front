@@ -128,67 +128,6 @@
         </el-table-column>
       </el-table>
     </div>
-    <el-dialog
-    v-model="dialogVisible"
-    title="问题详情"
-    width="30%"
-    :before-close="handleClose"
-  >
-    <el-form :model="form" label-width="120px">
-   
-   <el-form-item label="问题">
-      <el-input v-model="form.desc" type="textarea" />
-    </el-form-item>
-    <el-form-item label="问题">
-      <el-input v-model="form.desc" type="textarea" />
-    </el-form-item>
-    <el-form-item label="课程">
-      <el-select v-model="form.region" placeholder="please select your zone">
-        <el-option label="Zone one" value="shanghai" />
-        <el-option label="Zone two" value="beijing" />
-      </el-select>
-    </el-form-item>
-    <el-form-item label="章节">
-      <el-select v-model="form.region" placeholder="please select your zone">
-        <el-option label="Zone one" value="shanghai" />
-        <el-option label="Zone two" value="beijing" />
-      </el-select>
-    </el-form-item>
-    <el-form-item label="题型">
-      <el-radio-group v-model="form.resource">
-        <el-radio label="单选" />
-        <el-radio label="多选" />
-        <el-radio label="简答" />
-      </el-radio-group>
-    </el-form-item>
-    <el-form-item label="难度">
-      <el-radio-group v-model="form.resource">
-        <el-radio label="简单" />
-        <el-radio label="中等" />
-        <el-radio label="困难" />
-      </el-radio-group>
-    </el-form-item>
-    <el-form-item label="选择题答案">
-      <el-input   placeholder="A" clearable/>
-      <el-input v-model="form.name"  placeholder="B" clearable/>
-      <el-input v-model="form.name"  placeholder="C" clearable/>
-      <el-input v-model="form.name"  placeholder="D" clearable/>
-      <el-input v-model="form.name"  placeholder="D" clearable/>
-      <el-input v-model="form.name"  placeholder="D" clearable/>
-    </el-form-item>
-    <el-form-item label="答案">
-      <el-input v-model="form.name"  placeholder="A" clearable/>
-    </el-form-item>
-  </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogVisible = false"
-          >确定修改</el-button
-        >
-      </span>
-    </template>
-  </el-dialog>
   </div>
 </template>
 
@@ -216,12 +155,14 @@ let question = {
   type: "",
 };
 const MenuData = reactive({ data: [] }); //章节对应的表
+
 let getChapter = async () => {
   let response = await link(url.allChapter);
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
     return ElMessage.error(response.data.msg);
   }
   MenuData.data = response.data.data;
+  console.log(MenuData.data);
   MenuData.data.forEach((e) => {
     e.chapters.forEach((e1) => {
       e1.current = false;

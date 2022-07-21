@@ -34,14 +34,26 @@
         </el-form-item>
 
         <el-form-item label="课程">
-          <el-select placeholder="请选择课程">
-            <el-option label="Zone one" value="shanghai" />
-            <el-option label="Zone two" value="beijing" />
+          <el-select
+            placeholder="请选择课程"
+            v-model="subjectId"
+            @change="changeSubject(subjectId)"
+          >
+            <el-option
+              v-for="v in MenuData.data"
+              :key="v.subjectId"
+              :label="v.subjectname"
+              :value="v.subjectId"
+            />
           </el-select>
           <el-form-item label="章节">
-            <el-select placeholder="请选择章节">
-              <el-option label="Zone one" value="shanghai" />
-              <el-option label="Zone two" value="beijing" />
+            <el-select placeholder="请选择章节" v-model="chapterId">
+              <el-option
+                v-for="v in chapters.data"
+                :key="v.id"
+                :label="v.name"
+                :value="v.id"
+              />
             </el-select>
           </el-form-item>
         </el-form-item>
@@ -165,23 +177,45 @@ import { useRouter } from "vue-router";
 import link from "../../../api/link.js";
 import url from "../../../api/url.js";
 import code from "../../../api/code.js";
-import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { useStore } from "vuex";
-
-const onSubmit = () => {
-  console.log(text.value);
+import sortQuestion from "../../../util/sortQuestion.js";
+const ErrorCode = code;
+const MenuData = ref({ data: [] });
+let subjectId = ref();
+let chapters = reactive({ data: [] });
+let chapterId = ref();
+let changeSubject = (subjectId) => {
+  chapters.data = [];
+  MenuData.value.data.forEach((e) => {
+    if (e.subjectId == subjectId) {
+      e.chapters.forEach((item) => {
+        let chapter = {};
+        chapter.id = item.id;
+        chapter.name = item.name;
+        chapters.data.push(chapter);
+      });
+    }
+  });
 };
-
+let getChapter = async () => {
+  let response = await link(url.allChapter);
+  if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
+    return ElMessage.error(response.data.msg);
+  }
+  MenuData.value.data = response.data.data;
+};
 const dialogVisible = ref(false);
-
 const text = ref({
+  questionId: "",
   question: "题干",
   describe: "",
   score: "",
   level: "简单",
   type: "单选",
+  chapterId: "",
+  subjectId: "",
   A: "A",
   B: "B",
   C: "C",
@@ -206,9 +240,8 @@ let open = () => {
   }
   editInfo.value = text.value[item.value];
 };
-let unSave=()=>{
-  
-}
+
+let unSave = () => {};
 let saveInfo = () => {
   if (editInfo.value === "") {
     if (item.value === "question") {
@@ -227,72 +260,146 @@ let saveInfo = () => {
   dialogVisible.value = false;
 };
 const store = useStore();
-let getQuestionAllInfo = async () => {
-  let response = await link(url.question.getQuestionById);
+
+const onSubmit = () => {
+  //增加
+  if (store.state.isAdd) {
+    addQuestionAllInfo();
+  }
+};
+let sortLevel = (level) => {
+  if (level == "困难") return 3;
+  if (level == "简单") return 1;
+  if (level == "中等") return 2;
+};
+let sortType = (type) => {
+  if (type == "简答") return 3;
+  if (type == "单选") return 1;
+  if (type == "多选") return 2;
+};
+let getQuestionAllInfo = async (question) => {
+  let response = await link(url.question.getQuestionById(question.id));
   if (response.data.code !== ErrorCode.NORMAL_SUCCESS) {
     ElMessage.error(response.data.msg);
     return;
   }
-  let responseOne = await link(url.questionOption.get);
-  let responseTwo = await link(url.questionRightAnswer.get);
-  questionAllInfo.question = response.data.data;
-  questionAllInfo.questionOption = responseOne.data.data;
-  questionAllInfo.questionRightAnswer = responseTwo.data.data;
+  let responseOne = await link(url.questionOption.get(question.id));
+  let responseTwo = await link(url.questionRightAnswer.get(question.id));
+  let arr = [];
+  arr.push(question);
+  let q = sortQuestion(arr)[0];
+  text.value.questionId = q.id;
+  text.value.question = q.title;
+  text.value.describe = q.describe;
+  text.value.score = q.score;
+  text.value.level = q.level;
+  text.value.type = q.type;
+  if (q.type != "简答") {
+    text.value.A = responseOne.data.data.a;
+    text.value.B = responseOne.data.data.b;
+    text.value.C = responseOne.data.data.c;
+    text.value.D = responseOne.data.data.d;
+    text.value.E = responseOne.data.data.e;
+    text.value.F = responseOne.data.data.f;
+  }
+  text.value.answer = responseTwo.data.data.rightAnswer;
+  text.value.analysis = responseTwo.data.data.analysis;
 };
-let updateQuestionAllInfo = async () => {
-  let responseOne = await link(
-    url.question.update,
-    "put",
-    questionAllInfo.question
-  );
-  if (response.data.code !== ErrorCode.NORMAL_SUCCESS) {
-    ElMessage.error("添加失败");
+
+let updateQuestionAllInfo = async (q) => {
+  //传递的参数是question
+  let question = {};
+  question.id = q.id;
+  question.title = text.value.question;
+  question.describe = text.value.describe;
+  question.score = text.value.score;
+  question.levelId = sortLevel(text.value.level);
+  question.typeId = sortType(text.value.type);
+  let responseOne = await link(url.question.update, "put", question);
+  if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
+    ElMessage.error(responseOne.data.msg);
     return;
   }
-  let responseTwo = await link(
-    url.questionOption.update,
-    "put",
-    questionAllInfo.questionOption
-  );
+  if (text.value.type != "简答") {
+    let questionOption = {};
+    questionOption.questionId = q.id;
+    questionOption.a = text.value.A;
+    questionOption.b = text.value.B;
+    questionOption.c = text.value.C;
+    questionOption.d = text.value.D;
+    questionOption.e = text.value.E;
+    questionOption.f = text.value.F;
+    let responseTwo = await link(
+      url.questionOption.update,
+      "put",
+      questionOption
+    );
+  }
+  let questionRightAnswer = {};
+  questionRightAnswer.questionId = q.id;
+  questionRightAnswer.rightAnswer = text.value.answer;
+  questionRightAnswer.analysis = text.value.analysis;
   let responseThree = await link(
     url.questionRightAnswer.update,
     "put",
-    questionAllInfo.questionRightAnswer
+    questionRightAnswer
   );
 };
 let addQuestionAllInfo = async () => {
-  let responseOne = await link(
-    url.question.add,
-    "post",
-    questionAllInfo.question
-  );
+  let question = {};
+  question.question = text.value.question;
+  question.describe = text.value.describe;
+  question.score = text.value.score;
+  question.levelId = sortLevel(text.value.level);
+  question.typeId = sortType(text.value.type);
+  question.chapterId = chapterId.value;
+  question.subjectId = subjectId.value;
+  console.log(question)
+  let responseOne = await link(url.question.add, "post", question);
   if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
-    ElMessage.error("添加失败");
+    ElMessage.error(responseOne.data.msg);
     return;
+  }else{
+    ElMessage.success("添加成功！")
   }
-  questionAllInfo.questionOption.questionId = responseOne.data.questionId;
-  let responseTwo = await link(
-    url.questionOption.add,
-    "post",
-    questionAllInfo.questionOption
-  );
+  if (text.value.type != "简答") {
+    let questionOption = {};
+    console.log(responseOne.data.data)
+    questionOption.questionId = responseOne.data.data;
+    questionOption.a = text.value.A;
+    questionOption.b = text.value.B;
+    questionOption.c = text.value.C;
+    questionOption.d = text.value.D;
+    questionOption.e = text.value.E;
+    questionOption.f = text.value.F;
+    let responseTwo = await link(
+      url.questionOption.add,
+      "post",
+      questionOption
+    );
+  }
+  let questionRightAnswer = {};
+  questionRightAnswer.questionId = responseOne.data.data;
+  questionRightAnswer.rightAnswer = text.value.answer;
+  questionRightAnswer.analysis = text.value.analysis;
   let responseThree = await link(
     url.questionRightAnswer.add,
     "post",
-    questionAllInfo.questionRightAnswer
+    questionRightAnswer
   );
 };
 
-// onMounted(() => {
-//   if(store.state.isAdd){
-//     questionAllInfo={}
-//     return
-//   }
-//   getQuestionAllInfo()
-// });
-onUnmounted(() => {
-  store.commit("setIsAdd", true);
+onMounted(() => {
+  // if(store.state.isAdd){
+  //   questionAllInfo={}
+  //   return
+  // }
+  // getQuestionAllInfo()
+  getChapter();
 });
+// onUnmounted(() => {
+//   store.commit("setIsAdd", true);
+// });
 </script>
 <style scoped>
 #qadd {

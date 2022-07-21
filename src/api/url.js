@@ -36,12 +36,15 @@ let url = {
       return "/api/teacher/delete/" + tid
     },
   },
+  subject:{
+    getall:"/api/subject/getall"
+  },
   admin: {
     getInfo: (username) => {
       return "/api/admin/info/" + username;
     },
   },
-  allChapter: "/api/chapter/", //得到全部的课程信息，返回数据格式是StudentAnswer的MenuData
+  allChapter: "/api/chapter", //得到全部的课程信息，返回数据格式是StudentAnswer的MenuData
   question: {
     // getQuestionByChapterId:"/api/question/chapter/1",
     getQuestionByChapterId: (id) => {
@@ -54,7 +57,7 @@ let url = {
       return "/api/question/info/student/" + username;
     },
     update: "/api/question/update",
-    add: ""
+    add: "/api/question/add"
   },
   questionOption: {
     add: "/api/option/add",
