@@ -114,6 +114,8 @@ import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
 const ErrorCode = code;
+const router = useRouter();
+let currentSubjectId = 1;
 /**
  * 课程和对应的章节数据
  */
@@ -147,6 +149,7 @@ let clickChapterMenu = (val) => {
     });
   });
   val.current = true;
+  currentSubjectId = val.id;
   getQuestionByChapterId(val.id); //根据chapterid查询question
 };
 /**
@@ -163,7 +166,7 @@ let getQuestionByChapterId = async (id) => {
 };
 //TODO 鼠标点击题目事件
 let clickRow = (row, column, event) => {
-  // let response = await link(url.question.getQuestionById(row.id), "get");
+  router.push( { name:"answerQuestion",params:{'qid':row.id, 'sid':currentSubjectId } } )
 };
 
 /**

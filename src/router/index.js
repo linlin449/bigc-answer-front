@@ -37,6 +37,12 @@ const routes = [
         name: "favoriteStudent",
         component: () => import("../views/student/favorite/favoriteStudent.vue"),
       },
+      {
+        path: "/ans/:sid/:qid",
+        name: "answerQuestion",
+        component: () => import("../views/student/answer/AnswerQuestion.vue"),
+        props: true,
+      },
     ],
   },
   {
