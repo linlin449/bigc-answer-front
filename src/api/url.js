@@ -86,6 +86,9 @@ let url = {
     get: (questionId) => {
       return "/api/rightanswer/question/" + questionId;
     },
+    getRight: (questionId) => {
+      return "/api/rightanswer/question/rightquestion/" + questionId;
+    },
     update: "/api/rightanswer/update"
   }
 };

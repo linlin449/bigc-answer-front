@@ -12,6 +12,7 @@
           editorId="no"
           :toolbars="toolbars"
           v-model="editInfo"
+          @on-upload-img="onUploadImg"
           @onHtmlChanged="saveHtml"
         />
         <el-button text @click="saveInfo">保存</el-button>
@@ -197,27 +198,7 @@ import { useStore } from "vuex";
 import sortQuestion from "../../../util/sortQuestion.js";
 import sanitizeHtml from "sanitize-html";
 
-const onUploadImg = async (files, callback) => {
-  const res = await Promise.all(
-    files.map((file) => {
-      return new Promise((rev, rej) => {
-        const form = new FormData();
-        form.append("file", file);
 
-        // axios
-        //   .post('/api/img/upload', form, {
-        //     headers: {
-        //       'Content-Type': 'multipart/form-data'
-        //     }
-        //   })
-        //   .then((res) => rev(res))
-        //   .catch((error) => rej(error));
-      });
-    })
-  );
-
-  callback(res.map((item) => item.data.url));
-};
 const sanitize = (html) => {
   return sanitizeHtml(html);
 };
@@ -300,9 +281,21 @@ let textHtml = {
   answer: "答案",
   analysis: "解析",
 };
+
 let editHtmlInfo = "";
 let saveHtml = (html) => {
   editHtmlInfo = html;
+};
+let Imgbase64=""
+const onUploadImg = (files) => {
+  for (var i = 0; i < files.length; i++) {
+    var reader = new FileReader();
+    reader.readAsDataURL(files[i]);
+    reader.onload = function (e) {
+      const base64Img = e.target.result;
+      editInfo.value=editInfo.value+"<img src='" + base64Img + "'/>";
+    };
+  }
 };
 let unSave = () => {};
 let saveInfo = () => {
@@ -392,14 +385,20 @@ let getQuestionAllInfo = async (questionId) => {
     return;
   }
   if (q.type != "简答") {
-    text.value.A = responseOne.data.data.a==null ?"A": responseOne.data.data.a;
-    text.value.B = responseOne.data.data.b==null ?"B": responseOne.data.data.b;
-    text.value.C = responseOne.data.data.c==null ?"C": responseOne.data.data.c;
-    text.value.D = responseOne.data.data.d==null ?"D": responseOne.data.data.d;
-    text.value.E = responseOne.data.data.e==null ?"E": responseOne.data.data.e;
-    text.value.F = responseOne.data.data.f==null ?"F": responseOne.data.data.f;
+    text.value.A =
+      responseOne.data.data.a == null ? "A" : responseOne.data.data.a;
+    text.value.B =
+      responseOne.data.data.b == null ? "B" : responseOne.data.data.b;
+    text.value.C =
+      responseOne.data.data.c == null ? "C" : responseOne.data.data.c;
+    text.value.D =
+      responseOne.data.data.d == null ? "D" : responseOne.data.data.d;
+    text.value.E =
+      responseOne.data.data.e == null ? "E" : responseOne.data.data.e;
+    text.value.F =
+      responseOne.data.data.f == null ? "F" : responseOne.data.data.f;
   }
-  let responseTwo = await link(url.questionRightAnswer.get(questionId));
+  let responseTwo = await link(url.questionRightAnswer.getRight(questionId));
   if (responseTwo.data.code !== ErrorCode.NORMAL_SUCCESS) {
     if (responseTwo.data.data == null) {
       return;
@@ -495,7 +494,6 @@ let checkScore = (score) => {
 let addQuestionAllInfo = async () => {
   let question = {};
   question.question = textHtml.question;
-  console.log(textHtml.question);
   question.describe = text.value.describe;
   question.score = text.value.score;
   question.levelId = sortLevel(text.value.level);

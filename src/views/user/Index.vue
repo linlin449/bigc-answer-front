@@ -28,7 +28,7 @@ overflow:hidden
 }
 .common-layout{
 background-color: rgb(255, 255, 255);
-height: 1200px;
+height: auto;
 }
 
 </style>
