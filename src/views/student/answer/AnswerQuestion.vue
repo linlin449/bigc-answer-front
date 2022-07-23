@@ -18,13 +18,19 @@
                 </el-aside>
                 <el-main>
                     <div v-html="questionInfo.data.question" class="question-title" />
-                    <div v-for="(_, key) in selectInfo" class="question-option">
+                    <!-- 选项 -->
+                    <div v-for="(_, key) in selectInfo" class="question-option" v-show="questionInfo.data.typeId != 3">
                         <el-checkbox v-model="selectInfo[key]" size="large"
-                            v-show="optionInfo.data[key.toLowerCase()] != NULL" @change="handelSelect(key)"
+                            v-show="optionInfo.data[key.toLowerCase()] != null" @change="handelSelect(key)"
                             style="width:100% ;">
                             <span>{{ key }}.</span><span v-html="optionInfo.data[key.toLowerCase()]"></span>
                         </el-checkbox>
                     </div>
+                    <!-- 简答 -->
+                    <md-editor @on-upload-img="onUploadImg" @onHtmlChanged="handelHtmlChange" v-model="editorText"
+                        placeholder="在此输入你的答案,支持markdown格式" v-show="questionInfo.data.typeId == 3">
+                    </md-editor>
+
                 </el-main>
             </el-container>
             <el-divider />
@@ -58,18 +64,28 @@
 </template>
 <script setup>
 import { ElMessage } from 'element-plus';
-import { computed, onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import code from '@/api/code';
 import link from '@/api/link';
 import url from '@/api/url';
+import MdEditor from "md-editor-v3";
+import "md-editor-v3/lib/style.css";
 import { useStore } from 'vuex';
 
 const store = useStore();
+
 const props = defineProps({
     qid: Number,
-    sid: Number,
+    cid: Number,
 })
-
+const questionId = ref(0);
+const chapterId = ref(0);
+/**
+ * 答题类型
+ * 0 - 跳过已作答的题目
+ * 1 - 不跳过已作答的题目
+ */
+const answerType = ref(1);
 /**
  * 题目详细信息
  */
@@ -118,11 +134,12 @@ const optionInfo = reactive({ data: {} })
  * @param qid 问题ID
  */
 const getOptionInfo = async (qid) => {
+    if (questionInfo.data.typeId == 3) return;
     const response = await link(url.questionOption.get(qid), "get");
     if (response.data.code == code.NORMAL_SUCCESS) {
         optionInfo.data = response.data.data
     } else {
-        ElMessage.error(response.data.msg);
+        // ElMessage.error(response.data.msg);
     }
 }
 
@@ -143,26 +160,135 @@ const handelSelect = (key) => {
     }
 }
 /**
+ * 检查某题答题状态
+ * @param {Number} qid 问题ID
+ */
+const isQuestionAnswered = async (qid) => {
+    const response = await link(url.question.checkQuestionStatus(qid, store.state.username), "get");
+    if (response.data.code == code.NORMAL_SUCCESS) {
+        if (response.data.data.answerRight != null) {
+            return true;
+        }
+        return false;
+    } else {
+        ElMessage.error(response.data.msg);
+        return false;
+    }
+}
+const questionList = reactive({ data: [] })
+const getQuestionList = async (cid) => {
+    const response = await link(url.question.getQuestionByChapterId(cid), "get");
+    if (response.data.code == code.NORMAL_SUCCESS) {
+        questionList.data = response.data.data;
+    } else {
+        ElMessage.error(response.data.msg);
+    }
+}
+/**
  * 上一题
  */
-const questionPrev = () => {
+const questionPrev = async () => {
+    let index = 0;
+    for (let i = 0; i < questionList.data.length; i++) {
+        if (questionList.data[i].id == questionId.value) {
+            if (i == 0) {
+                ElMessage.info("当前已经是第一道题")
+                return;
+            } else {
+                index = i - 1;
+                break;
+            }
+        }
+    }
+    let status = await isQuestionAnswered(questionList.data[index].id);
+    if (answerType.value == 0) {
+        while (status == true) {
+            if (index - 1 < 0) {
+                ElMessage.info("前面的题目已经都做过了");
+                return;
+            }
+            index--;
+            status = await isQuestionAnswered(questionList.data[index].id);
+        }
+    }
+    questionInfo.data = questionList.data[index]
+    questionId.value = questionList.data[index].id
+    getOptionInfo(questionId.value)
+    if (status == true) {
+        //TODO 获取解析以及正确答案
 
+    }
 }
 /**
  * 下一题
  */
-const questionNext = () => {
+const questionNext = async () => {
+    let index = 0;
+    for (let i = 0; i < questionList.data.length; i++) {
+        if (questionList.data[i].id == questionId.value) {
+            if (i == questionList.data.length - 1) {
+                ElMessage.info("当前已经是最后一题")
+                return;
+            } else {
+                index = i + 1;
+                break;
+            }
+        }
+    }
+    let status = await isQuestionAnswered(questionList.data[index].id);
+    if (answerType.value == 0) {
+        while (status == true) {
+            if (index + 1 == questionList.data.length) {
+                ElMessage.info("后的题目已经都做过了");
+                return;
+            }
+            index++;
+            status = await isQuestionAnswered(questionList.data[index].id);
+        }
+    }
 
+    questionInfo.data = questionList.data[index]
+    questionId.value = questionList.data[index].id
+    getOptionInfo(questionId.value)
+    if (status == true) {
+        //TODO 获取解析以及正确答案
+
+    }
+}
+/**
+ * md-editor绑定内容
+ */
+const editorText = ref('');
+/**
+ * md-editor的html
+ */
+const editorHtml = ref('');
+const handelHtmlChange = (html) => {
+    editorHtml.value = html;
+    console.log('html', html);
+}
+const onUploadImg = (files) => {
+    for (var i = 0; i < files.length; i++) {
+        var reader = new FileReader();
+        reader.readAsDataURL(files[i]);
+        reader.onload = function (e) {
+            const base64Img = e.target.result
+            editorText.value = editorText.value + "<img src='" + base64Img + "'/>";
+        }
+    }
 }
 /**
  * 答题
  */
-const questionAnswer = () => {
+const answerQuestion = () => {
 
 }
 onMounted(() => {
-    getQuestionInfo(props.qid);
-    getOptionInfo(props.qid)
+    questionId.value = props.qid;
+    chapterId.value = props.cid;
+    getQuestionList(chapterId.value);
+    getQuestionInfo(questionId.value);
+    getOptionInfo(questionId.value);
 })
 </script>
 <style scoped>
@@ -192,13 +318,13 @@ onMounted(() => {
 
 .question-title {
     font-size: 25px;
+    margin-bottom: 10px;
 }
 
 .question-option {
     border: 1px solid transparent;
     border-radius: 10px;
     font-size: 25px;
-    margin-top: 10px;
     width: 80%;
     padding-left: 20px;
     transition: 0.5s;

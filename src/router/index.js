@@ -38,7 +38,7 @@ const routes = [
         component: () => import("../views/student/favorite/favoriteStudent.vue"),
       },
       {
-        path: "/ans/:sid/:qid",
+        path: "/ans/:cid/:qid",
         name: "answerQuestion",
         component: () => import("../views/student/answer/AnswerQuestion.vue"),
         props: true,

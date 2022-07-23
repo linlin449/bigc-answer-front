@@ -48,8 +48,8 @@ let url = {
       return "/api/teacher/resetpassword/" + tid
     }
   },
-  subject:{
-    getall:"/api/subject/getall"
+  subject: {
+    getall: "/api/subject/getall"
   },
   admin: {
     getInfo: (username) => {
@@ -67,6 +67,9 @@ let url = {
     },
     getStudentQuestionInfo: (username) => {
       return "/api/question/info/student/" + username;
+    },
+    checkQuestionStatus: (questionId, username) => {
+      return "/api/question/check/" + questionId + "/username/" + username;
     },
     update: "/api/question/update",
     add: "/api/question/add"
