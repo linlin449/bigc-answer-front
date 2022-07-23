@@ -1,5 +1,5 @@
 <template>
-  <div id="qadd">
+  <el-card class="box-card">
     <div class="main">
       <el-dialog
         v-model="dialogVisible"
@@ -8,14 +8,21 @@
         @open="open"
         :before-close="handleClose"
       >
-        <md-editor editorId="no" :toolbars="toolbars" v-model="editInfo" />
+        <md-editor
+          editorId="no"
+          :toolbars="toolbars"
+          v-model="editInfo"
+          @onHtmlChanged="saveHtml"
+        />
         <el-button text @click="saveInfo">保存</el-button>
         <el-button text @click="dialogVisible = false">退出</el-button>
       </el-dialog>
       <el-form label-width="120px">
         <el-form-item label="题干">
           <md-editor
+            class="editor"
             editorId="one"
+            :html-preview="true"
             v-model="text.question"
             :previewOnly="true"
           />
@@ -75,7 +82,8 @@
 
         <el-form-item label="选项" v-if="text.type != '简答'">
           <md-editor
-            class="option"
+            placeholder="A选项"
+            class="option editor"
             editorId="two"
             v-model="text.A"
             :previewOnly="true"
@@ -84,7 +92,7 @@
             >编辑</el-button
           >
           <md-editor
-            class="option"
+            class="option editor"
             editorId="two"
             v-model="text.B"
             :previewOnly="true"
@@ -93,7 +101,7 @@
             >编辑</el-button
           >
           <md-editor
-            class="option"
+            class="option editor"
             editorId="two"
             v-model="text.C"
             :previewOnly="true"
@@ -102,7 +110,7 @@
             >编辑</el-button
           >
           <md-editor
-            class="option"
+            class="option editor"
             editorId="two"
             v-model="text.D"
             :previewOnly="true"
@@ -112,7 +120,7 @@
           >
           <template v-if="text.type == '多选'">
             <md-editor
-              class="option"
+              class="option editor"
               editorId="two"
               v-model="text.E"
               :previewOnly="true"
@@ -121,7 +129,7 @@
               >编辑</el-button
             >
             <md-editor
-              class="option"
+              class="option editor"
               editorId="two"
               v-model="text.F"
               :previewOnly="true"
@@ -132,7 +140,12 @@
           </template>
         </el-form-item>
         <el-form-item label="答案">
-          <md-editor editorId="two" v-model="text.answer" :previewOnly="true" />
+          <md-editor
+            class="editor"
+            editorId="two"
+            v-model="text.answer"
+            :previewOnly="true"
+          />
           <el-button
             type="primary"
             class="option"
@@ -142,6 +155,7 @@
         </el-form-item>
         <el-form-item label="解析">
           <md-editor
+            class="editor"
             editorId="two"
             v-model="text.analysis"
             :previewOnly="true"
@@ -159,7 +173,7 @@
         </el-form-item>
       </el-form>
     </div>
-  </div>
+  </el-card>
 </template>
 <script setup>
 import {
@@ -181,7 +195,35 @@ import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { useStore } from "vuex";
 import sortQuestion from "../../../util/sortQuestion.js";
+import sanitizeHtml from "sanitize-html";
+
+const onUploadImg = async (files, callback) => {
+  const res = await Promise.all(
+    files.map((file) => {
+      return new Promise((rev, rej) => {
+        const form = new FormData();
+        form.append("file", file);
+
+        // axios
+        //   .post('/api/img/upload', form, {
+        //     headers: {
+        //       'Content-Type': 'multipart/form-data'
+        //     }
+        //   })
+        //   .then((res) => rev(res))
+        //   .catch((error) => rej(error));
+      });
+    })
+  );
+
+  callback(res.map((item) => item.data.url));
+};
+const sanitize = (html) => {
+  return sanitizeHtml(html);
+};
+
 const ErrorCode = code;
+const router = useRouter();
 const MenuData = ref({ data: [] });
 let subjectId = ref();
 let chapters = reactive({ data: [] });
@@ -240,23 +282,49 @@ let open = () => {
   }
   editInfo.value = text.value[item.value];
 };
-
+let textHtml = {
+  questionId: "",
+  question: "题干",
+  describe: "",
+  score: "",
+  level: "简单",
+  type: "单选",
+  chapterId: "",
+  subjectId: "",
+  A: "A",
+  B: "B",
+  C: "C",
+  D: "D",
+  E: "E",
+  F: "F",
+  answer: "答案",
+  analysis: "解析",
+};
+let editHtmlInfo = "";
+let saveHtml = (html) => {
+  editHtmlInfo = html;
+};
 let unSave = () => {};
 let saveInfo = () => {
   if (editInfo.value === "") {
     if (item.value === "question") {
       text.value[item.value] = "题干";
+      textHtml[item.value] == "题干";
     } else if (item.value === "answer") {
       text.value[item.value] = "答案";
+      textHtml[item.value] == "答案";
     } else if (item.value === "analysis") {
       text.value[item.value] = "解析";
+      textHtml[item.value] == "解析";
     } else {
       text.value[item.value] = item.value;
+      textHtml[item.value] == item.value;
     }
     dialogVisible.value = false;
     return;
   }
   text.value[item.value] = editInfo.value;
+  textHtml[item.value] = editHtmlInfo;
   dialogVisible.value = false;
 };
 const store = useStore();
@@ -265,6 +333,28 @@ const onSubmit = () => {
   //增加
   if (store.state.isAdd) {
     addQuestionAllInfo();
+    text.value = {};
+    text.value = {
+      questionId: "",
+      question: "题干",
+      describe: "",
+      score: "",
+      level: "简单",
+      type: "单选",
+      chapterId: "",
+      subjectId: "",
+      A: "A",
+      B: "B",
+      C: "C",
+      D: "D",
+      E: "E",
+      F: "F",
+      answer: "答案",
+      analysis: "解析",
+    };
+  } else {
+    updateQuestionAllInfo(store.state.questionId);
+    router.push({ name: "questionAdmin" });
   }
 };
 let sortLevel = (level) => {
@@ -277,16 +367,14 @@ let sortType = (type) => {
   if (type == "单选") return 1;
   if (type == "多选") return 2;
 };
-let getQuestionAllInfo = async (question) => {
-  let response = await link(url.question.getQuestionById(question.id));
+let getQuestionAllInfo = async (questionId) => {
+  let response = await link(url.question.getQuestionById(questionId));
   if (response.data.code !== ErrorCode.NORMAL_SUCCESS) {
     ElMessage.error(response.data.msg);
     return;
   }
-  let responseOne = await link(url.questionOption.get(question.id));
-  let responseTwo = await link(url.questionRightAnswer.get(question.id));
   let arr = [];
-  arr.push(question);
+  arr.push(response.data.data);
   let q = sortQuestion(arr)[0];
   text.value.questionId = q.id;
   text.value.question = q.title;
@@ -294,84 +382,146 @@ let getQuestionAllInfo = async (question) => {
   text.value.score = q.score;
   text.value.level = q.level;
   text.value.type = q.type;
+  let responseOne = await link(url.questionOption.get(questionId));
+  if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
+    if (responseOne.data.data == null) {
+      return;
+    }
+    console.log("dedao" + responseOne.data.data);
+    ElMessage.error(response.data.msg);
+    return;
+  }
   if (q.type != "简答") {
-    text.value.A = responseOne.data.data.a;
-    text.value.B = responseOne.data.data.b;
-    text.value.C = responseOne.data.data.c;
-    text.value.D = responseOne.data.data.d;
-    text.value.E = responseOne.data.data.e;
-    text.value.F = responseOne.data.data.f;
+    text.value.A = responseOne.data.data.a==null ?"A": responseOne.data.data.a;
+    text.value.B = responseOne.data.data.b==null ?"B": responseOne.data.data.b;
+    text.value.C = responseOne.data.data.c==null ?"C": responseOne.data.data.c;
+    text.value.D = responseOne.data.data.d==null ?"D": responseOne.data.data.d;
+    text.value.E = responseOne.data.data.e==null ?"E": responseOne.data.data.e;
+    text.value.F = responseOne.data.data.f==null ?"F": responseOne.data.data.f;
+  }
+  let responseTwo = await link(url.questionRightAnswer.get(questionId));
+  if (responseTwo.data.code !== ErrorCode.NORMAL_SUCCESS) {
+    if (responseTwo.data.data == null) {
+      return;
+    }
+    ElMessage.error(response.data.msg);
+    return;
   }
   text.value.answer = responseTwo.data.data.rightAnswer;
   text.value.analysis = responseTwo.data.data.analysis;
 };
 
-let updateQuestionAllInfo = async (q) => {
+let updateQuestionAllInfo = async (id) => {
   //传递的参数是question
   let question = {};
-  question.id = q.id;
-  question.title = text.value.question;
-  question.describe = text.value.describe;
-  question.score = text.value.score;
-  question.levelId = sortLevel(text.value.level);
-  question.typeId = sortType(text.value.type);
-  let responseOne = await link(url.question.update, "put", question);
-  if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
-    ElMessage.error(responseOne.data.msg);
-    return;
-  }
-  if (text.value.type != "简答") {
-    let questionOption = {};
-    questionOption.questionId = q.id;
-    questionOption.a = text.value.A;
-    questionOption.b = text.value.B;
-    questionOption.c = text.value.C;
-    questionOption.d = text.value.D;
-    questionOption.e = text.value.E;
-    questionOption.f = text.value.F;
-    let responseTwo = await link(
-      url.questionOption.update,
-      "put",
-      questionOption
-    );
-  }
-  let questionRightAnswer = {};
-  questionRightAnswer.questionId = q.id;
-  questionRightAnswer.rightAnswer = text.value.answer;
-  questionRightAnswer.analysis = text.value.analysis;
-  let responseThree = await link(
-    url.questionRightAnswer.update,
-    "put",
-    questionRightAnswer
-  );
-};
-let addQuestionAllInfo = async () => {
-  let question = {};
-  question.question = text.value.question;
+  question.id = id;
+  question.question = textHtml.question;
+  console.log(textHtml.question);
   question.describe = text.value.describe;
   question.score = text.value.score;
   question.levelId = sortLevel(text.value.level);
   question.typeId = sortType(text.value.type);
   question.chapterId = chapterId.value;
   question.subjectId = subjectId.value;
-  console.log(question)
+
+  if (!checkScore(question.score)) {
+    return;
+  }
+
+  let responseOne = await link(url.question.update, "put", question);
+  if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
+    ElMessage.error(responseOne.data.msg);
+    return;
+  } else {
+    ElMessage.success("更新成功！");
+  }
+
+  if (text.value.type != "简答") {
+    let questionOption = {};
+    questionOption.id = "";
+    questionOption.questionId = id;
+    questionOption.a = text.value.A == "A" ? null : textHtml.A;
+    questionOption.b = text.value.B == "B" ? null : textHtml.B;
+    questionOption.c = text.value.C == "C" ? null : textHtml.C;
+    questionOption.d = text.value.D == "D" ? null : textHtml.D;
+    questionOption.e = text.value.E == "E" ? null : textHtml.E;
+    questionOption.f = text.value.F == "F" ? null : textHtml.F;
+    let responseTwo = await link(
+      url.questionOption.update,
+      "put",
+      questionOption
+    );
+    if (responseTwo.data.code === ErrorCode.NORMAL_ERROR) {
+      let responseTwoone = await link(
+        url.questionOption.add,
+        "post",
+        questionOption
+      );
+      if (responseTwoone.data.code !== ErrorCode.NORMAL_SUCCESS) {
+        ElMessage.error(responseTwoone.data.msg);
+        return;
+      }
+    }
+  }
+  let questionRightAnswer = {};
+  questionRightAnswer.id = "";
+  questionRightAnswer.questionId = id;
+  questionRightAnswer.rightAnswer = textHtml.answer;
+  questionRightAnswer.analysis = textHtml.analysis;
+  let responseThree = await link(
+    url.questionRightAnswer.update,
+    "put",
+    questionRightAnswer
+  );
+  if (responseThree.data.code === ErrorCode.NORMAL_ERROR) {
+    let responseThreeone = await link(
+      url.questionRightAnswer.add,
+      "post",
+      questionRightAnswer
+    );
+    if (responseThreeone.data.code !== ErrorCode.NORMAL_SUCCESS) {
+      ElMessage.error(responseThreeone.data.msg);
+      return;
+    }
+  }
+};
+let checkScore = (score) => {
+  if (score > 20) {
+    ElMessage.error("单个题目，成绩不能大于20");
+    return false;
+  }
+  return true;
+};
+let addQuestionAllInfo = async () => {
+  let question = {};
+  question.question = textHtml.question;
+  console.log(textHtml.question);
+  question.describe = text.value.describe;
+  question.score = text.value.score;
+  question.levelId = sortLevel(text.value.level);
+  question.typeId = sortType(text.value.type);
+  question.chapterId = chapterId.value;
+  question.subjectId = subjectId.value;
+  if (!checkScore(question.score)) {
+    return;
+  }
   let responseOne = await link(url.question.add, "post", question);
   if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
     ElMessage.error(responseOne.data.msg);
     return;
-  }else{
-    ElMessage.success("添加成功！")
+  } else {
+    ElMessage.success("添加成功！");
   }
-  if (text.value.type != "简答") {
+  if (textHtml.type != "简答") {
     let questionOption = {};
-    console.log(responseOne.data.data)
+    console.log(responseOne.data.data);
     questionOption.questionId = responseOne.data.data;
-    questionOption.a = text.value.A;
-    questionOption.b = text.value.B;
-    questionOption.c = text.value.C;
-    questionOption.d = text.value.D;
-    questionOption.e = text.value.E;
-    questionOption.f = text.value.F;
+    questionOption.a = text.value.A == "A" ? null : textHtml.A;
+    questionOption.b = text.value.B == "B" ? null : textHtml.B;
+    questionOption.c = text.value.C == "C" ? null : textHtml.C;
+    questionOption.d = text.value.D == "D" ? null : textHtml.D;
+    questionOption.e = text.value.E == "E" ? null : textHtml.E;
+    questionOption.f = text.value.F == "F" ? null : textHtml.F;
     let responseTwo = await link(
       url.questionOption.add,
       "post",
@@ -380,8 +530,8 @@ let addQuestionAllInfo = async () => {
   }
   let questionRightAnswer = {};
   questionRightAnswer.questionId = responseOne.data.data;
-  questionRightAnswer.rightAnswer = text.value.answer;
-  questionRightAnswer.analysis = text.value.analysis;
+  questionRightAnswer.rightAnswer = textHtml.answer;
+  questionRightAnswer.analysis = textHtml.analysis;
   let responseThree = await link(
     url.questionRightAnswer.add,
     "post",
@@ -390,22 +540,25 @@ let addQuestionAllInfo = async () => {
 };
 
 onMounted(() => {
-  // if(store.state.isAdd){
-  //   questionAllInfo={}
-  //   return
-  // }
-  // getQuestionAllInfo()
   getChapter();
+  if (!store.state.isAdd) {
+    getQuestionAllInfo(store.state.questionId);
+  }
 });
-// onUnmounted(() => {
-//   store.commit("setIsAdd", true);
-// });
+onUnmounted(() => {
+  store.commit("setIsAdd", true);
+});
 </script>
 <style scoped>
-#qadd {
-  width: 800px;
-  margin: 0 auto;
+.box-card {
+  width: 60%;
+  margin-left: 25%;
 }
+.editor {
+  border: 1px solid rgb(217, 216, 216);
+  border-radius: 5px;
+}
+
 .el-form-item {
   margin-top: 0px;
 }

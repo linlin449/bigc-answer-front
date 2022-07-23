@@ -5,7 +5,9 @@ export default createStore({
     username: "",
     role: 1, // 学生 - 1 老师 - 2 管理员 - 3
     token: "",
-    isAdd:true//true 是添加题目，不是修改题目，
+    isAdd:true,//true 是添加题目
+    chapterId:1,
+    questionId:""
   },
   getters: {},
   mutations: {
@@ -20,6 +22,12 @@ export default createStore({
     },
     setIsAdd(state,val){
       state.isAdd=val
+    },
+    setchapterId(state,val){
+      state.chapterId=val
+    },
+    setquestionId(state,val){
+      state.questionId=val
     }
   },
   actions: {},

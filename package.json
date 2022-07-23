@@ -12,6 +12,7 @@
     "axios": "^0.27.2",
     "element-plus": "^2.2.8",
     "md-editor-v3": "^2.2.1",
+    "sanitize-html": "^2.7.1",
     "vue": "^3.2.25",
     "vue-router": "^4.1.1",
     "vue3-cookies": "^1.0.6",

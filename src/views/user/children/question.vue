@@ -143,6 +143,8 @@ import { ArrowDown } from "@element-plus/icons-vue";
 import { useStore } from 'vuex';
 const ErrorCode = code;
 const store = useStore();
+const router = useRouter();
+let chapterId="";
 /**
  * 课程和对应的章节数据
  */
@@ -178,6 +180,7 @@ let clickChapterMenu = (val) => {
     });
   });
   val.current = true;
+  store.commit("setchapterId",val.id)
   getQuestionByChapterId(val.id); //根据chapterid查询question
 };
 /**
@@ -192,10 +195,7 @@ let getQuestionByChapterId = async (id) => {
   }
   tableData.data = sortQuestion(response.data.data);
 };
-//TODO 鼠标点击题目事件
-let clickRow = (row, column, event) => {
-  // let response = await link(url.question.getQuestionById(row.id), "get");
-};
+
 const form = reactive({
   name: '',
   region: '',
@@ -206,8 +206,8 @@ const form = reactive({
   resource: '',
   desc: '',
 })
-let dialogVisible = ref(false) //编辑表单是否可见
 const handleEdit = (index, row) => {
+store.commit("setquestionId",row.id)
 store.commit("setIsAdd",false)
 router.push({ name: "questionAdminAdd" });
 };
@@ -219,7 +219,7 @@ const handleDelete = (index, row) => {
  */
 onMounted(() => {
   getChapter();
-  getQuestionByChapterId(1);
+  getQuestionByChapterId(store.state.chapterId);
 });
 </script>
 
