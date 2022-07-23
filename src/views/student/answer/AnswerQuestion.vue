@@ -13,6 +13,7 @@
                         <span>难度:{{ questionLevel }}</span>
                         <span>分值:{{ questionInfo.data.score }}</span>
                         <span>题型:<span style="color: red;">{{ questionType }}</span></span>
+                        <el-checkbox v-model="skipAnswered">跳过已做题</el-checkbox>
                     </el-space>
                     <div class="divider" />
                 </el-aside>
@@ -22,7 +23,7 @@
                     <div v-for="(_, key) in selectInfo" class="question-option" v-show="questionInfo.data.typeId != 3">
                         <el-checkbox v-model="selectInfo[key]" size="large"
                             v-show="optionInfo.data[key.toLowerCase()] != null" @change="handelSelect(key)"
-                            style="width:100% ;">
+                            style="width:100% ;height: auto;">
                             <span>{{ key }}.</span><span v-html="optionInfo.data[key.toLowerCase()]"></span>
                         </el-checkbox>
                     </div>
@@ -30,7 +31,20 @@
                     <md-editor @on-upload-img="onUploadImg" @onHtmlChanged="handelHtmlChange" v-model="editorText"
                         placeholder="在此输入你的答案,支持markdown格式" v-show="questionInfo.data.typeId == 3">
                     </md-editor>
-
+                    <div v-show="answerVisible">
+                        <div>
+                            <span style="color:red ;margin-right: 10px;">正确答案</span>
+                            <span v-html="rightAnswer.data.rightAnswer" />
+                        </div>
+                        <div>
+                            <span style="color:green ;margin-right: 10px;">我的答案</span>
+                            <span>{{ rightAnswer.data.answerText }}</span>
+                        </div>
+                        <div>
+                            <span style="color:red ;margin-right: 10px;">解析</span>
+                            <span v-html="rightAnswer.data.analysis" />
+                        </div>
+                    </div>
                 </el-main>
             </el-container>
             <el-divider />
@@ -53,7 +67,7 @@
                                 <el-button type="primary" @click="questionNext">下一题</el-button>
                             </el-col>
                             <el-col :span="4">
-                                <el-button type="success" auto-insert-space @click="questionAnswer">提交</el-button>
+                                <el-button type="success" auto-insert-space @click="answerQuestion">提交</el-button>
                             </el-col>
                         </el-row>
                     </el-main>
@@ -64,7 +78,7 @@
 </template>
 <script setup>
 import { ElMessage } from 'element-plus';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import code from '@/api/code';
 import link from '@/api/link';
 import url from '@/api/url';
@@ -81,11 +95,9 @@ const props = defineProps({
 const questionId = ref(0);
 const chapterId = ref(0);
 /**
- * 答题类型
- * 0 - 跳过已作答的题目
- * 1 - 不跳过已作答的题目
+ * 跳过已作答题目
  */
-const answerType = ref(1);
+const skipAnswered = ref(true);
 /**
  * 题目详细信息
  */
@@ -134,12 +146,11 @@ const optionInfo = reactive({ data: {} })
  * @param qid 问题ID
  */
 const getOptionInfo = async (qid) => {
-    if (questionInfo.data.typeId == 3) return;
     const response = await link(url.questionOption.get(qid), "get");
     if (response.data.code == code.NORMAL_SUCCESS) {
         optionInfo.data = response.data.data
     } else {
-        // ElMessage.error(response.data.msg);
+        ElMessage.error(response.data.msg);
     }
 }
 
@@ -151,7 +162,17 @@ const selectInfo = reactive({
     E: false,
     F: false,
 })
-
+watch(
+    questionId,
+    (val) => {
+        for (let o in selectInfo) {
+            selectInfo[o] = false;
+        }
+        if (questionInfo.data.typeId != 3) {
+            getOptionInfo(val)
+        }
+    }
+)
 const handelSelect = (key) => {
     if (questionInfo.data.typeId == 1) {
         for (let val in selectInfo) {
@@ -185,9 +206,41 @@ const getQuestionList = async (cid) => {
     }
 }
 /**
+ * 正确答案是否可见
+ */
+const answerVisible = ref(false);
+/**
+ * 问题正确答案
+ */
+const rightAnswer = reactive({ data: {} })
+/**
+ * 获取题目正确答案以及答题详细
+ * @param {Number} qid 
+ */
+const getAnswerDetail = async (qid) => {
+    const response = await link(url.questionRightAnswer.get(qid), "get");
+    if (response.data.code == code.NORMAL_SUCCESS) {
+        rightAnswer.data = response.data.data
+        if (questionInfo.typeId != 3) {
+            let ans = response.data.data.rightAnswer;
+            ans = ans.split("-")
+            for (let o in ans) {
+                selectInfo[ans[o]] = true;
+            }
+        } else {
+            editorText.value = response.data.data.answerText;
+        }
+    }
+    else {
+        ElMessage.error(response.data.msg);
+    }
+}
+
+/**
  * 上一题
  */
 const questionPrev = async () => {
+    answerVisible.value = false;
     let index = 0;
     for (let i = 0; i < questionList.data.length; i++) {
         if (questionList.data[i].id == questionId.value) {
@@ -201,7 +254,7 @@ const questionPrev = async () => {
         }
     }
     let status = await isQuestionAnswered(questionList.data[index].id);
-    if (answerType.value == 0) {
+    if (skipAnswered.value == true) {
         while (status == true) {
             if (index - 1 < 0) {
                 ElMessage.info("前面的题目已经都做过了");
@@ -213,16 +266,16 @@ const questionPrev = async () => {
     }
     questionInfo.data = questionList.data[index]
     questionId.value = questionList.data[index].id
-    getOptionInfo(questionId.value)
     if (status == true) {
-        //TODO 获取解析以及正确答案
-
+        getAnswerDetail(questionId.value);
+        answerVisible.value = true;
     }
 }
 /**
  * 下一题
  */
 const questionNext = async () => {
+    answerVisible.value = false;
     let index = 0;
     for (let i = 0; i < questionList.data.length; i++) {
         if (questionList.data[i].id == questionId.value) {
@@ -236,7 +289,7 @@ const questionNext = async () => {
         }
     }
     let status = await isQuestionAnswered(questionList.data[index].id);
-    if (answerType.value == 0) {
+    if (skipAnswered.value == true) {
         while (status == true) {
             if (index + 1 == questionList.data.length) {
                 ElMessage.info("后的题目已经都做过了");
@@ -246,13 +299,11 @@ const questionNext = async () => {
             status = await isQuestionAnswered(questionList.data[index].id);
         }
     }
-
     questionInfo.data = questionList.data[index]
     questionId.value = questionList.data[index].id
-    getOptionInfo(questionId.value)
     if (status == true) {
-        //TODO 获取解析以及正确答案
-
+        getAnswerDetail(questionId.value);
+        answerVisible.value = true;
     }
 }
 /**
@@ -265,7 +316,6 @@ const editorText = ref('');
 const editorHtml = ref('');
 const handelHtmlChange = (html) => {
     editorHtml.value = html;
-    console.log('html', html);
 }
 const onUploadImg = (files) => {
     for (var i = 0; i < files.length; i++) {
@@ -278,17 +328,39 @@ const onUploadImg = (files) => {
     }
 }
 /**
+ * 提交问题答案
+ * @param {*} data 答案数据 
+ * @param {Number} qid 问题ID
+ */
+const submitAnswer = async (data, qid) => {
+    console.log(data);
+    //TODO 提交数据
+}
+/**
  * 答题
  */
 const answerQuestion = () => {
-
+    let ans = '';
+    if (questionInfo.data.typeId != 3) {
+        for (let o in selectInfo) {
+            if (selectInfo[o] == true) {
+                ans = ans + o + '-';
+            }
+        }
+        ans = ans.substring(0, ans.length - 1);
+    } else {
+        ans = editorHtml.value;
+    }
+    submitAnswer(ans, questionId.value);
 }
-onMounted(() => {
+onMounted(async () => {
+    getQuestionList(props.cid);
+    getQuestionInfo(props.qid);
     questionId.value = props.qid;
     chapterId.value = props.cid;
-    getQuestionList(chapterId.value);
-    getQuestionInfo(questionId.value);
-    getOptionInfo(questionId.value);
+    const answered = await isQuestionAnswered(questionId.value);
+    answerVisible.value = answered;
+    if (answered) getAnswerDetail(questionId.value);
 })
 </script>
 <style scoped>
@@ -337,6 +409,7 @@ onMounted(() => {
 }
 
 .question-option span {
+    display: inline-block;
     margin-right: 15px;
 }
 </style>

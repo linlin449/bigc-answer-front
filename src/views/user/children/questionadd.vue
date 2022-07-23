@@ -196,7 +196,7 @@ import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { useStore } from "vuex";
 import sortQuestion from "../../../util/sortQuestion.js";
-import sanitizeHtml from "sanitize-html";
+// import sanitizeHtml from "sanitize-html";
 
 
 const sanitize = (html) => {
