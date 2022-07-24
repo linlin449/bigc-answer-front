@@ -105,4 +105,7 @@ body,
 html {
   height: 100%;
 }
+.side-menu{
+  height: 1000px;
+}
 </style>

@@ -1,18 +1,30 @@
 <template>
   <div id="Answer">
-    <div v-for="v in MenuData.data" class="subject-box" :key="v.subject_id">
-      <h5 class="title">{{ v.subjectname }}</h5>
-      <ul class="chapter-menu">
-        <li
-          v-for="val in v.chapters"
-          :class="{ current: val.current }"
-          :key="val.id"
-          @click="clickChapterMenu(val)"
-        >
-          {{ val.name }}
-        </li>
-      </ul>
-    </div>
+    <el-dropdown
+      v-for="v in MenuData.data"
+      class="subject-box"
+      :key="v.subject_id"
+      size="large"
+    >
+      <el-button type="primary">
+        <span class="el-dropdown-link">
+          {{ v.subjectname }}
+          <el-icon class="el-icon--right">
+            <arrow-down />
+          </el-icon>
+        </span>
+      </el-button>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item
+            v-for="val in v.chapters"
+            :key="val.id"
+            @click="clickChapterMenu(val)"
+            >{{ val.name }}</el-dropdown-item
+          >
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
     <div class="question-box">
       <el-table
         @row-click="clickRow"
@@ -24,7 +36,6 @@
         <el-table-column
           prop="title"
           label="问题"
-          
           header-align="center"
           show-overflow-tooltip
         />
@@ -113,6 +124,7 @@ import url from "../../../api/url.js";
 import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
+import { ArrowDown } from "@element-plus/icons-vue";
 const ErrorCode = code;
 const router = useRouter();
 let currentChapterId = 1;
@@ -142,7 +154,7 @@ let getChapter = async () => {
   MenuData.data[0].chapters[0].current = true;
 };
 let clickChapterMenu = (val) => {
-  if(val.current) return
+  if (val.current) return;
   MenuData.data.forEach((element) => {
     element.chapters.forEach((e) => {
       e.current = false;
@@ -166,7 +178,10 @@ let getQuestionByChapterId = async (id) => {
 };
 //TODO 鼠标点击题目事件
 let clickRow = (row, column, event) => {
-  router.push( { name:"answerQuestion",params:{'qid':row.id, 'cid':currentChapterId } } )
+  router.push({
+    name: "answerQuestion",
+    params: { qid: row.id, cid: currentChapterId },
+  });
 };
 
 /**
@@ -185,6 +200,8 @@ onMounted(() => {
 }
 #Answer .subject-box {
   margin: 20px;
+  margin-left: 0px;
+  cursor: pointer;
 }
 #Answer .subject-box .title {
   cursor: pointer;
@@ -223,4 +240,5 @@ onMounted(() => {
 #Answer .subject-box .chapter-menu .current {
   background-color: #9ed1f7;
 }
+
 </style>

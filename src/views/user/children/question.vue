@@ -230,6 +230,7 @@ onMounted(() => {
 }
 #Answer .subject-box {
   margin: 20px;
+  cursor: pointer;
 }
 #Answer .subject-box .title {
   cursor: pointer;
