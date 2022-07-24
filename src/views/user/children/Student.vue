@@ -6,7 +6,7 @@
         <el-input placeholder="学生用户名" class="input-username" v-model="studentUsername" />
         <el-button type="primary" @click="handelClick">添加学生</el-button>
       </template>
-      <el-table :data="studentList.data.records">
+      <el-table :data="studentList.data.records" v-loading="loading">
         <el-table-column prop="username" label="用户名" width="180" />
         <el-table-column prop="name" label="姓名" width="180" />
         <el-table-column prop="email" label="邮箱" width="180" />
@@ -64,8 +64,11 @@ import StudentAnalysVue from '@/components/StudentAnalys.vue';
 const store = useStore();
 const ErrorCode = code;
 
+const loading = ref(true)
+
 const studentList = reactive({ data: {} })
 const getStudentList = async (page) => {
+  loading.value = true;
   let path = url.student.getListByTeacher(store.state.username, page);
   if (store.state.role == 3) path = url.student.getListByPage(page);
   const response = await link(path, "get")
@@ -74,6 +77,7 @@ const getStudentList = async (page) => {
   } else {
     studentList.data = response.data.data;
   }
+  loading.value = false;
 }
 
 //页码被更换

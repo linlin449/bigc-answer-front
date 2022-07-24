@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card class="box-card">
-      <el-table :data="teacherList.data.data">
+      <el-table :data="teacherList.data.data" v-loading="loading">
         <el-table-column prop="username" label="用户名" width="180" />
         <el-table-column prop="name" label="姓名" width="180" />
         <el-table-column prop="email" label="邮箱" width="180" />
@@ -71,9 +71,12 @@ import url from '@/api/url';
 
 const ErrorCode = code
 
+const loading = ref(true);
+
 //获取老师列表
 const teacherList = reactive({ data: {} })
 const getTeacherList = async () => {
+  loading.value = true;
   const response = await link(url.teacher.getList, "get")
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
     ElMessage.error(response.data.msg);
@@ -81,6 +84,7 @@ const getTeacherList = async () => {
   else {
     teacherList.data = response.data
   }
+  loading.value = false;
 }
 const editInfo = reactive({
   email: '',

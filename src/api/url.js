@@ -72,7 +72,8 @@ let url = {
       return "/api/question/check/" + questionId + "/username/" + username;
     },
     update: "/api/question/update",
-    add: "/api/question/add"
+    add: "/api/question/add",
+    answer: "/api/question/answer"
   },
   questionOption: {
     add: "/api/option/add",

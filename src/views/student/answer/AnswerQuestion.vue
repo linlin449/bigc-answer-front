@@ -333,8 +333,18 @@ const onUploadImg = (files) => {
  * @param {Number} qid 问题ID
  */
 const submitAnswer = async (data, qid) => {
-    console.log(data);
-    //TODO 提交数据
+    const ans = {
+        answer: data,
+        questionID: qid
+    }
+    const response = await link(url.question.answer, "post", ans);
+    if (response.data.code == code.NORMAL_SUCCESS) {
+        getAnswerDetail(qid);
+        answerVisible.value = true;
+    }
+    else {
+        ElMessage.error(response.data.msg);
+    }
 }
 /**
  * 答题
