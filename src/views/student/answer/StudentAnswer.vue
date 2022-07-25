@@ -38,7 +38,11 @@
           label="问题"
           header-align="center"
           show-overflow-tooltip
-        />
+        >
+        <template #default="scope">
+        <div style="display: flex; align-items: center" v-html="scope.row.title"/>
+    </template>
+        </el-table-column>
         <el-table-column
           prop="describe"
           label="描述"
