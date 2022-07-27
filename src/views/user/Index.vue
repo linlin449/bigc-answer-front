@@ -24,7 +24,7 @@ import TopMenu from "../../components/TopMenu.vue";
 <style>
 .el-main{
 background-color: rgb(217, 216, 216);
-overflow:hidden
+overflow-y:hidden
 }
 .common-layout{
 background-color: rgb(255, 255, 255);

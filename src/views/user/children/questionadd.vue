@@ -18,6 +18,7 @@
         <el-button text @click="saveInfo">保存</el-button>
         <el-button text @click="dialogVisible = false">退出</el-button>
       </el-dialog>
+
       <el-form label-width="120px">
         <el-form-item label="题干">
           <md-editor
@@ -53,7 +54,7 @@
               :label="v.subjectname"
               :value="v.subjectId"
             />
-          </el-select>
+           </el-select>
           <el-form-item label="章节">
             <el-select placeholder="请选择章节" v-model="chapterId">
               <el-option
@@ -203,6 +204,9 @@ const sanitize = (html) => {
 };
 
 const ErrorCode = code;
+
+
+
 const router = useRouter();
 const MenuData = ref({ data: [] });
 let subjectId = ref();
@@ -228,6 +232,8 @@ let getChapter = async () => {
   }
   MenuData.value.data = response.data.data;
 };
+
+
 const dialogVisible = ref(false);
 const text = ref({
   questionId: "",
@@ -250,6 +256,7 @@ const text = ref({
 let toolbars = ["revoke", "katex", "next", "image"];
 const item = ref("question");
 let editInfo = ref("");
+
 let buttonClick = (name) => {
   item.value = name;
   dialogVisible.value = true;
@@ -519,7 +526,6 @@ let addQuestionAllInfo = async () => {
     "post",
     questionRightAnswer
   );
-
   text.value = {};
   text.value = {
     questionId: "",
@@ -553,7 +559,7 @@ onUnmounted(() => {
 </script>
 <style scoped>
 .box-card {
-  width: 60%;
+  width: 890px;
   margin-left: 25%;
 }
 .editor {

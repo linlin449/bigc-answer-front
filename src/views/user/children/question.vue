@@ -211,8 +211,15 @@ store.commit("setquestionId",row.id)
 store.commit("setIsAdd",false)
 router.push({ name: "questionAdminAdd" });
 };
-const handleDelete = (index, row) => {
+const handleDelete = async(index, row) => {
   console.log(index, row);
+  let response=await link(url.question.deleteQuestionAllInfo(row.id), "get")
+  if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
+    return ElMessage.error(response.data.msg);
+  }else{
+    ElMessage.success("删除成功！");
+  }
+  getQuestionByChapterId(store.state.chapterId);
 };
 /**
  * 初始化

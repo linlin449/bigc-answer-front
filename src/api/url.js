@@ -71,6 +71,9 @@ let url = {
     checkQuestionStatus: (questionId, username) => {
       return "/api/question/check/" + questionId + "/username/" + username;
     },
+    deleteQuestionAllInfo:(questionId)=>{
+      return "/api/question/delete/"+questionId
+    },
     update: "/api/question/update",
     add: "/api/question/add",
     answer: "/api/question/answer"

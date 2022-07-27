@@ -80,6 +80,11 @@ const routes = [
         name: "teacherAdminAdd",
         component: () => import("../views/user/children/TeacherAdd.vue"),
       },
+      {
+        path: "subject",
+        name: "subjectAdminAdd",
+        component: () => import("../views/user/children/subjectAdd.vue"),
+      },
     ]
   }
 ];

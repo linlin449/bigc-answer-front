@@ -50,6 +50,7 @@ const MenuData = [
     children:  [
       { id: 1, index: "questionAdmin", name: "查看考题", icon: DocumentChecked },
       { id: 2, index: "questionAdminAdd", name: "新增考题", icon: DocumentAdd },
+      { id: 3, index: "subjectAdminAdd", name: "查看章节", icon:  DocumentChecked  },
     ],
   },
   {
