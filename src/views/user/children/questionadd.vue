@@ -198,7 +198,6 @@ import { useStore } from "vuex";
 import sortQuestion from "../../../util/sortQuestion.js";
 // import sanitizeHtml from "sanitize-html";
 
-
 const sanitize = (html) => {
   return sanitizeHtml(html);
 };
@@ -286,14 +285,14 @@ let editHtmlInfo = "";
 let saveHtml = (html) => {
   editHtmlInfo = html;
 };
-let Imgbase64=""
+let Imgbase64 = "";
 const onUploadImg = (files) => {
   for (var i = 0; i < files.length; i++) {
     var reader = new FileReader();
     reader.readAsDataURL(files[i]);
     reader.onload = function (e) {
       const base64Img = e.target.result;
-      editInfo.value=editInfo.value+"<img src='" + base64Img + "'/>";
+      editInfo.value = editInfo.value + "<img src='" + base64Img + "'/>";
     };
   }
 };
@@ -326,25 +325,6 @@ const onSubmit = () => {
   //增加
   if (store.state.isAdd) {
     addQuestionAllInfo();
-    text.value = {};
-    text.value = {
-      questionId: "",
-      question: "题干",
-      describe: "",
-      score: "",
-      level: "简单",
-      type: "单选",
-      chapterId: "",
-      subjectId: "",
-      A: "A",
-      B: "B",
-      C: "C",
-      D: "D",
-      E: "E",
-      F: "F",
-      answer: "答案",
-      analysis: "解析",
-    };
   } else {
     updateQuestionAllInfo(store.state.questionId);
     router.push({ name: "questionAdmin" });
@@ -510,9 +490,8 @@ let addQuestionAllInfo = async () => {
   } else {
     ElMessage.success("添加成功！");
   }
-  if (textHtml.type != "简答") {
+  if (text.value.type != "简答") {
     let questionOption = {};
-    console.log(responseOne.data.data);
     questionOption.questionId = responseOne.data.data;
     questionOption.a = text.value.A == "A" ? null : textHtml.A;
     questionOption.b = text.value.B == "B" ? null : textHtml.B;
@@ -525,7 +504,12 @@ let addQuestionAllInfo = async () => {
       "post",
       questionOption
     );
+    if (responseTwo.data.code !== ErrorCode.NORMAL_SUCCESS) {
+      ElMessage.error(responseTwo.data.msg);
+      return;
+    } 
   }
+
   let questionRightAnswer = {};
   questionRightAnswer.questionId = responseOne.data.data;
   questionRightAnswer.rightAnswer = textHtml.answer;
@@ -535,6 +519,26 @@ let addQuestionAllInfo = async () => {
     "post",
     questionRightAnswer
   );
+
+  text.value = {};
+  text.value = {
+    questionId: "",
+    question: "题干",
+    describe: "",
+    score: "",
+    level: "简单",
+    type: "单选",
+    chapterId: "",
+    subjectId: "",
+    A: "A",
+    B: "B",
+    C: "C",
+    D: "D",
+    E: "E",
+    F: "F",
+    answer: "答案",
+    analysis: "解析",
+  };
 };
 
 onMounted(() => {
