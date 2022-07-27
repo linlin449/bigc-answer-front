@@ -88,6 +88,12 @@ import { useStore } from 'vuex';
 
 const store = useStore();
 
+MdEditor.config({
+    editorConfig: {
+        renderDelay: 0
+    }
+});
+
 const props = defineProps({
     qid: Number,
     cid: Number,
@@ -223,6 +229,9 @@ const getAnswerDetail = async (qid) => {
         rightAnswer.data = response.data.data
         if (questionInfo.typeId != 3) {
             let ans = response.data.data.rightAnswer;
+            for (let o in selectInfo) {
+                selectInfo[o] = false;
+            }
             ans = ans.split("-")
             for (let o in ans) {
                 selectInfo[ans[o]] = true;
@@ -360,6 +369,10 @@ const answerQuestion = () => {
         ans = ans.substring(0, ans.length - 1);
     } else {
         ans = editorHtml.value;
+    }
+    if (ans.length == 0) {
+        ElMessage.error("答案不能为空");
+        return;
     }
     submitAnswer(ans, questionId.value);
 }
