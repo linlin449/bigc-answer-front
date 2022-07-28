@@ -53,7 +53,10 @@
                     <el-aside width="200px">
                         <div style="color:gray ;">
                             试题描述:{{ questionInfo.data.describe }}
+
                         </div>
+                        <el-button v-if="!isFavorite" type="warning" :icon="Star" circle @click="addFavorite" />
+                        <el-button v-if="isFavorite" type="warning" :icon="StarFilled" circle @click="delFavorite" />
                     </el-aside>
                     <el-main>
                         <el-row>
@@ -77,7 +80,11 @@
     </el-card>
 </template>
 <script setup>
-import { ElMessage } from 'element-plus';
+import {
+    Star,
+    StarFilled
+} from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import code from '@/api/code';
 import link from '@/api/link';
@@ -85,6 +92,7 @@ import url from '@/api/url';
 import MdEditor from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import { useStore } from 'vuex';
+import { isQuestionFavorite, addFavoriteQuestion, deleteFavoriteQuestion } from '../../../api/api';
 
 const store = useStore();
 
@@ -157,6 +165,7 @@ const getOptionInfo = async (qid) => {
         optionInfo.data = response.data.data
     } else {
         ElMessage.error(response.data.msg);
+        optionInfo.data = {};
     }
 }
 
@@ -168,17 +177,53 @@ const selectInfo = reactive({
     E: false,
     F: false,
 })
+const isFavorite = ref(false);
 watch(
     questionId,
-    (val) => {
+    async (val) => {
         for (let o in selectInfo) {
             selectInfo[o] = false;
         }
         if (questionInfo.data.typeId != 3) {
             getOptionInfo(val)
         }
+
+        const response = await isQuestionFavorite(val, store.state.username);
+        if (response.data.code == code.NORMAL_SUCCESS) {
+            isFavorite.value = response.data.data;
+        }
     }
 )
+const addFavorite = () => {
+    ElMessageBox.confirm(
+        '确认添加到收藏夹?',
+        '收藏题目',
+        { confirmButtonText: '确认', cancelButtonText: '取消', type: 'success', }
+    ).then(async () => {
+        const response = await addFavoriteQuestion(questionId.value, store.state.username);
+        if (response.data.code == code.NORMAL_SUCCESS) {
+            ElMessage.success(response.data.msg);
+            isFavorite.value = true;
+        } else {
+            ElMessage.error(response.data.msg);
+        }
+    }).catch(() => { })
+}
+const delFavorite = () => {
+    ElMessageBox.confirm(
+        '确认将该题从收藏夹删除?',
+        '收藏题目',
+        { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
+    ).then(async () => {
+        const response = await deleteFavoriteQuestion(questionId.value, store.state.username);
+        if (response.data.code == code.NORMAL_SUCCESS) {
+            ElMessage.success(response.data.msg);
+            isFavorite.value = false;
+        } else {
+            ElMessage.error(response.data.msg);
+        }
+    }).catch(() => { })
+}
 const handelSelect = (key) => {
     if (questionInfo.data.typeId == 1) {
         for (let val in selectInfo) {
