@@ -54,16 +54,6 @@ const MenuData = [
     ],
   },
   {
-    id: 2,
-    name: "考试管理",
-    index: "examManage",
-    icon: Document,
-    children: [
-      { id: 1, index: "examAdmin", name: "查看考试", icon: DocumentChecked },
-      { id: 2, index: "examAdminAdd", name: "新增考试", icon: DocumentAdd },
-    ],
-  },
-  {
     id: 3,
     name: "学生管理",
     index: "studentManage",

@@ -94,6 +94,21 @@ let url = {
       return "/api/rightanswer/question/rightquestion/" + questionId;
     },
     update: "/api/rightanswer/update"
+  },
+  chapter:{
+    add:"/api/chapter/add",
+    delete:(chapterId)=>{
+      return "/api/chapter/delete/"+chapterId;
+    },
+    update: "/api/chapter/update"
+
+  },
+  subject:{
+    add:"/api/subject/add",
+    delete:(subjectId)=>{
+      return "/api/subject/delete/"+subjectId;
+    },
+    update: "/api/subject/update"
   }
 };
 
