@@ -28,11 +28,6 @@ const routes = [
         component: () => import("../views/student/answer/StudentAnswer.vue"),
       },
       {
-        path: "exam",
-        name: "examStudent",
-        component: () => import("../views/student/exam/StudentExam.vue"),
-      },
-      {
         path: "favorite",
         name: "favoriteStudent",
         component: () => import("../views/student/favorite/favoriteStudent.vue"),
