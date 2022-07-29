@@ -13,7 +13,6 @@
                         <span>难度:{{ questionLevel }}</span>
                         <span>分值:{{ questionInfo.data.score }}</span>
                         <span>题型:<span style="color: red;">{{ questionType }}</span></span>
-                        <el-checkbox v-model="skipAnswered">跳过已做题</el-checkbox>
                     </el-space>
                     <div class="divider" />
                 </el-aside>
@@ -95,15 +94,10 @@ MdEditor.config({
 });
 
 const props = defineProps({
-    qid: Number,
-    cid: Number,
+    qid: Number
 })
 const questionId = ref(0);
-const chapterId = ref(0);
-/**
- * 跳过已作答题目
- */
-const skipAnswered = ref(true);
+
 /**
  * 题目详细信息
  */
@@ -204,13 +198,8 @@ const isQuestionAnswered = async (qid) => {
 }
 
 const questionList = reactive({ data: [] })
-const getQuestionList = async (cid) => {
-    const response = await link(url.question.getQuestionByChapterId(cid), "get");
-    if (response.data.code == code.NORMAL_SUCCESS) {
-        questionList.data = response.data.data;
-    } else {
-        ElMessage.error(response.data.msg);
-    }
+const getQuestionList = () => {
+        questionList.data = store.state.wrongQuestionList;
 }
 /**
  * 正确答案是否可见
@@ -264,16 +253,6 @@ const questionPrev = async () => {
         }
     }
     let status = await isQuestionAnswered(questionList.data[index].id);
-    if (skipAnswered.value == true) {
-        while (status == true) {
-            if (index - 1 < 0) {
-                ElMessage.info("前面的题目已经都做过了");
-                return;
-            }
-            index--;
-            status = await isQuestionAnswered(questionList.data[index].id);
-        }
-    }
     questionInfo.data = questionList.data[index]
     questionId.value = questionList.data[index].id
     if (status == true) {
@@ -299,16 +278,6 @@ const questionNext = async () => {
         }
     }
     let status = await isQuestionAnswered(questionList.data[index].id);
-    if (skipAnswered.value == true) {
-        while (status == true) {
-            if (index + 1 == questionList.data.length) {
-                ElMessage.info("后的题目已经都做过了");
-                return;
-            }
-            index++;
-            status = await isQuestionAnswered(questionList.data[index].id);
-        }
-    }
     questionInfo.data = questionList.data[index]
     questionId.value = questionList.data[index].id
     if (status == true) {
@@ -378,10 +347,10 @@ const answerQuestion = () => {
     submitAnswer(ans, questionId.value);
 }
 onMounted(async () => {
-    getQuestionList(props.cid);
+    getQuestionList();
     getQuestionInfo(props.qid);
+    console.log(props.qid)
     questionId.value = props.qid;
-    chapterId.value = props.cid;
     const answered = await isQuestionAnswered(questionId.value);
     answerVisible.value = answered;
     if (answered) getAnswerDetail(questionId.value);

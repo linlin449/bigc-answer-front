@@ -7,10 +7,15 @@ export default createStore({
     token: "",
     isAdd:true,//true 是添加题目
     chapterId:1,
-    questionId:""
+    questionId:"",
+    wrongQuestionList:"",
   },
   getters: {},
   mutations: {
+    setwrongQuestionList(state,value){
+      state.wrongQuestionList=""
+      state.wrongQuestionList=value
+    },
     setUsername(state, val) {
       state.username = val;
     },

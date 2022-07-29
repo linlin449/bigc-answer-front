@@ -6,7 +6,7 @@
         <ul class="list">
           <li class="logo"><span>Bigc-Answer</span></li>
           <li @click="handelSelect('answerStudent')">答题</li>
-          <li @click="handelSelect('analysisStudent')">分析</li>
+          <li @click="handelSelect('analysisStudent')">错题</li>
           <li @click="handelSelect('favoriteStudent')">收藏</li>
           <li
             class="right"

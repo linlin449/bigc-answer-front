@@ -1,68 +1,112 @@
 <template>
-  <el-table
-    :data="tableData"
-    style="width: 100%"
-    :row-class-name="tableRowClassName"
-  >
-    
-    <el-table-column prop="name" label="Name" width="180" />
-    <el-table-column prop="address" label="Address" />
-  </el-table>
+
+    <div class="question-box">
+         <el-button type="primary" @click="TotalInfo" style="margin-bottom: 10px;">总体情况</el-button>
+        <el-table @row-click="clickRow" :data="wrongQuestionPage.data.records" border style="width: 100%"
+            :row-class-name="tableRowClassName">
+            <el-table-column prop="title" label="问题" header-align="center" show-overflow-tooltip>
+                <template #default="scope">
+                    <div style="display: flex; align-items: center" v-html="scope.row.title" />
+                </template>
+            </el-table-column>
+            <el-table-column prop="describe" label="描述" width="180" header-align="center" />
+            <el-table-column prop="score" label="分数" width="80" align="center" header-align="center" sortable>
+                <template #default="scope">
+                    <el-tag type="info" round disable-transitions>{{
+                            scope.row.score
+                    }}</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="level" label="难度" width="80" align="center" header-align="center">
+                <template #default="scope">
+                    <el-tag v-if="scope.row.level === '困难'" type="danger" disable-transitions>{{ scope.row.level }}
+                    </el-tag>
+                    <el-tag v-if="scope.row.level === '简单'" type="success" disable-transitions>{{ scope.row.level }}
+                    </el-tag>
+                    <el-tag v-if="scope.row.level === '中等'" type="warning" disable-transitions>{{ scope.row.level }}
+                    </el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column prop="type" label="类型" width="80" align="center" header-align="center"><template
+                    #default="scope">
+                    <el-tag v-if="scope.row.type === '单选'" disable-transitions>{{
+                            scope.row.type
+                    }}</el-tag>
+                    <el-tag v-if="scope.row.type === '多选'" type="success" disable-transitions>{{ scope.row.type }}
+                    </el-tag>
+                    <el-tag v-if="scope.row.type === '简答'" type="info" disable-transitions>{{ scope.row.type }}</el-tag>
+                </template></el-table-column>
+        </el-table>
+         <el-pagination style="margin-top: 10px; margin-left:-5px ;" v-model:currentPage="wrongQuestionPage.data.current" layout="prev, pager, next"
+        :total="wrongQuestionPage.data.total" @current-change="handleCurrentChange" />
+    </div>
+    <StudentAnalysVue :dialogTableVisible="analysShow" :username="store.state.username" @before-close="analysShow = false" />
 </template>
 
-<script lang="ts" setup>
-interface User {
-  date: string
-  name: string
-  address: string
+<script setup>
+import { useCookies } from 'vue3-cookies'
+import { reactive, watch, onMounted } from "vue";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import link from "@/api/link.js";
+import url from "@/api/url.js";
+import code from "@/api/code.js";
+import sortQuestion from "@/util/sortQuestion.js";
+import * as check from "@/util/verfifcation.js";
+import { ElMessage } from "element-plus";
+import { useStore } from 'vuex';
+import StudentAnalysVue from '@/components/StudentAnalys.vue';
+const store = useStore();
+const { cookies } = useCookies()
+
+let analysShow=ref(false)
+let TotalInfo=()=>{
+    analysShow.value=true
 }
 
-const tableRowClassName = ({
-  row,
-  rowIndex,
-}: {
-  row: User
-  rowIndex: number
-}) => {
-  if (rowIndex === 1) {
-    return 'warning-row'
-  } else if (rowIndex === 3) {
-    return 'success-row'
-  }
-  return ''
+let ErrorCode=code
+let router = useRouter();
+const currentUsername=store.state.username;
+//得到当前页的错题
+let wrongQuestionPage=reactive({data:{}})
+let getCurrentPageWrongQuestion = async (currentPage, username) => {
+    let path = url.wrongQuestion.get(currentPage, username)
+    const response = await link(path)
+    if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
+        return ElMessage.error(response.data.msg);
+    } else {
+        wrongQuestionPage.data = response.data.data;
+        wrongQuestionPage.data.records=sortQuestion(response.data.data.records);
+        store.commit("setwrongQuestionList", response.data.data.records);
+        console.log(wrongQuestionPage)
+    }
+}
+const handleCurrentChange = (currentPage) => {
+  getCurrentPageWrongQuestion(currentPage, currentUsername);
 }
 
-let tableData: User[] = [
-  {
-    date: '2016-05-03',
-    
-    address: 'No. 189, Grove St, Los Angeles',
-    name: 'Tom',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-]
+//TODO 鼠标点击题目事件
+let clickRow = (row, column, event) => {
+    console.log("0000000000"+row.id)
+  router.push({
+    name: "wrongQuestion",
+    params: { qid: row.id },
+  });
+};
+
+//然后点击具体错题可进入详细页面就和答题界面类似
+//可增加笔记，
+//错题详情信息挂在侧边栏就可以了。
+onMounted(() => {
+  getCurrentPageWrongQuestion(1,currentUsername)
+})
 </script>
 
-<style lang="scss">
-.el-table .warning-row {
-  background-color: aqua;
-  
-}
-.el-table .success-row {
-  --el-table-tr-bg-color: var(--el-color-success-light-9);
+
+<style scoped>
+.question-box{
+    width: 980px;
+    margin: 0 auto;
+    margin-top: 20px;
 }
 </style>
