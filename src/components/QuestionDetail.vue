@@ -12,43 +12,47 @@
                     <div class="divider" />
                 </el-aside>
                 <el-main>
-                    <div v-html="questionInfo.data.question" class="question-title" />
+                    <div v-html="questionInfo.data.question" class="question-title default-theme" />
                     <!-- 选项 -->
                     <div v-for="(_, key) in selectInfo" class="question-option" v-show="questionInfo.data.typeId != 3">
                         <el-checkbox disabled v-model="selectInfo[key]" size="large"
                             v-show="optionInfo.data[key.toLowerCase()] != null" @change="handelSelect(key)"
                             style="width:100% ;height: auto;">
-                            <span>{{ key }}.</span><span v-html="optionInfo.data[key.toLowerCase()]"></span>
+                            <span>{{ key }}.</span><span class="default-theme"
+                                v-html="optionInfo.data[key.toLowerCase()]"></span>
                         </el-checkbox>
                     </div>
                     <!-- 简答 -->
-                    <div v-html="editorText" v-show="questionInfo.data.typeId == 3" class="answer-text" />
+                    <div v-html="editorText" v-show="questionInfo.data.typeId == 3" class="answer-text default-theme" />
                     <div v-show="answerVisible">
                         <div>
-                            <span style="color:red ;margin-right: 10px;">正确答案</span>
-                            <span v-html="rightAnswer.data.rightAnswer" />
+                            <span class="default-theme" style="color:red ;margin-right: 10px;">正确答案</span>
+                            <span class="default-theme" v-html="rightAnswer.data.rightAnswer" />
                         </div>
                         <div>
                             <span style="color:green ;margin-right: 10px;">我的答案</span>
-                            <span v-html="rightAnswer.data.answerText" />
+                            <span class="default-theme" v-html="rightAnswer.data.answerText" />
                         </div>
                         <div>
                             <span style="color:red ;margin-right: 10px;">解析</span>
-                            <span v-html="rightAnswer.data.analysis" />
+                            <span class="default-theme" v-html="rightAnswer.data.analysis" />
                         </div>
                     </div>
                 </el-main>
             </el-container>
             <el-divider />
-            <el-footer>
+            <el-footer height="auto">
                 <el-container>
                     <el-aside width="200px">
-                        <div style="color:gray ;">
+                        <div class="default-theme" style="color:gray ;">
                             试题描述:{{ questionInfo.data.describe }}
                         </div>
                         <el-button v-if="!isFavorite" type="warning" :icon="Star" circle @click="addFavorite" />
                         <el-button v-if="isFavorite" type="warning" :icon="StarFilled" circle @click="delFavorite" />
                     </el-aside>
+                    <el-main>
+                        <slot name="default"></slot>
+                    </el-main>
                 </el-container>
             </el-footer>
         </el-container>
@@ -62,9 +66,8 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, reactive, ref, watch } from 'vue';
 import code from '@/api/code';
-import MdEditor from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
 import { useStore } from 'vuex';
+import "md-editor-v3/lib/style.css";
 import {
     isQuestionFavorite,
     addFavoriteQuestion,
@@ -76,12 +79,6 @@ import {
 } from '../api/api';
 
 const store = useStore();
-
-MdEditor.config({
-    editorConfig: {
-        renderDelay: 0
-    }
-});
 
 const props = defineProps({
     dialogTableVisible: Boolean,
@@ -261,13 +258,7 @@ const getAnswerDetail = async (qid, typeId = 1) => {
  * md-editor绑定内容
  */
 const editorText = ref('');
-/**
- * md-editor的html
- */
-const editorHtml = ref('');
-const handelHtmlChange = (html) => {
-    editorHtml.value = html;
-}
+
 
 const handelOpen = async () => {
     questionId.value = props.qid;

@@ -6,7 +6,7 @@
     <el-table @row-click="clickRow" :data="favotireQuestion.records" style="width: 100%" border stripe>
       <el-table-column label="问题">
         <template #default="scope">
-          <div style="display: flex; align-items: center" v-html="scope.row.question" />
+          <div class="default-theme" style="display: flex; align-items: center" v-html="scope.row.question" />
         </template>
       </el-table-column>
       <el-table-column prop="describe" label="描述" />
@@ -25,23 +25,42 @@
     <el-pagination background layout="prev, pager, next" :total="favotireQuestion.total"
       v-model:currentPage="favotireQuestion.current" :page-size="favotireQuestion.size" />
     <QuestionDetail :qid="questionId" v-model:dialogTableVisible="dialogTableVisible"
-      @before-close="dialogTableVisible = false" />
+      @before-close="dialogTableVisible = false">
+      <span>我的笔记:</span>
+      <div class="default-theme" v-html="favotireQuestion.note[clickIndex]"
+        style="border:1px solid cornflowerblue;min-height:100px ;" v-show="!isEdit"></div>
+      <md-editor @on-upload-img="onUploadImg" @onHtmlChanged="handelHtmlChange" v-model="editorText"
+        placeholder="在此输入你的笔记,支持markdown格式" v-show="isEdit">
+      </md-editor>
+      <el-button type="primary" style="margin-top:10px ;" @click="handelEdit" v-show="!isEdit">编辑</el-button>
+      <el-button type="primary" style="margin-top:10px ;" v-show="isEdit" @click="updateNote">保存</el-button>
+      <el-button type="info" style="margin-top:10px ;" v-show="isEdit" @click="isEdit = false">取消</el-button>
+    </QuestionDetail>
   </el-card>
 </template>
 
 <script setup>
-import { getQuestionListByIds, getFavoriteList } from '../../../api/api.js'
+import { getQuestionListByIds, getFavoriteList, updateQuestionNote } from '../../../api/api.js'
 import { onMounted, reactive, ref, watch } from 'vue';
 import { useStore } from 'vuex';
 import code from '../../../api/code.js';
 import { ElMessage } from 'element-plus';
 import QuestionDetail from '@/components/QuestionDetail.vue'
+import MdEditor from "md-editor-v3";
+import "md-editor-v3/lib/style.css";
 const store = useStore();
 
 const dialogTableVisible = ref(false);
 
+
+MdEditor.config({
+  editorConfig: {
+    renderDelay: 0
+  }
+});
 const favotireQuestion = reactive({
   records: [],
+  note: [],
   total: 0,
   size: 10,
   current: 1,
@@ -76,6 +95,7 @@ const getFavoriteQuestion = async (page) => {
   if (resData.code == code.NORMAL_SUCCESS) {
     let ids = [];
     for (let i in resData.data.records) {
+      favotireQuestion.note.push(resData.data.records[i].note)
       ids.push(resData.data.records[i].questionId)
     }
     favotireQuestion.total = resData.data.total;
@@ -95,13 +115,57 @@ const getFavoriteQuestion = async (page) => {
   }
 }
 
+const clickIndex = ref(0);
+
 const clickRow = (row) => {
+  for (let i in favotireQuestion.records) {
+    if (favotireQuestion.records[i].id == row.id) {
+      clickIndex.value = i;
+      break;
+    }
+  }
   questionId.value = row.id;
   dialogTableVisible.value = true
 }
+
+
+const isEdit = ref(false)
+
+const editorText = ref('')
+const editorHtml = ref('')
+const handelHtmlChange = (html) => {
+  editorHtml.value = html;
+}
+const onUploadImg = (files) => {
+  for (var i = 0; i < files.length; i++) {
+    var reader = new FileReader();
+    reader.readAsDataURL(files[i]);
+    reader.onload = function (e) {
+      const base64Img = e.target.result
+      editorText.value = editorText.value + "<img src='" + base64Img + "'/>";
+    }
+  }
+}
+const handelEdit = () => {
+  isEdit.value = true;
+  editorText.value = favotireQuestion.note[clickIndex.value]
+}
+const updateNote = async () => {
+  const response = await updateQuestionNote(questionId.value, store.state.username, editorHtml.value)
+  if (response.data.code == code.NORMAL_SUCCESS) {
+    ElMessage.success(response.data.msg);
+    isEdit.value = false;
+    favotireQuestion.note[clickIndex.value] = editorHtml.value
+  } else {
+    ElMessage.error(response.data.msg);
+  }
+}
+
+
+
+
 onMounted(() => {
   getFavoriteQuestion(1);
-
 })
 </script>
 

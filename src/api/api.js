@@ -80,3 +80,14 @@ export const checkQuestionStatus = (questionId, username) => {
 export const getRightAnswerById = (questionId) => {
     return service.get(`/api/rightanswer/question/${questionId}`)
 }
+
+/**
+ * 修改收藏夹题目的笔记
+ * @param {Number} questionId 问题ID
+ * @param {String} username 学生username
+ * @param {String} note 笔记文本
+ * @returns 
+ */
+export const updateQuestionNote = (questionId, username, note) => {
+    return service.post(`/api/favorite/update/note/question/${questionId}/username/${username}`, { "note": note })
+}  

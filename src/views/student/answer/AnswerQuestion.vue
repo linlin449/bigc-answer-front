@@ -286,7 +286,6 @@ const getAnswerDetail = async (qid, questionType = 1) => {
                 selectInfo[ans[o]] = true;
             }
         } else {
-            console.log('aaaaaaaaaaaaaaaaaa');
             editorText.value = rightAnswer.data.answerText;
         }
     }
