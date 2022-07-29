@@ -13,7 +13,6 @@
                         <span>难度:{{ questionLevel }}</span>
                         <span>分值:{{ questionInfo.data.score }}</span>
                         <span>题型:<span style="color: red;">{{ questionType }}</span></span>
-                        <el-checkbox v-model="skipAnswered">跳过已做题</el-checkbox>
                     </el-space>
                     <div class="divider" />
                 </el-aside>
@@ -38,7 +37,7 @@
                         </div>
                         <div>
                             <span style="color:green ;margin-right: 10px;">我的答案</span>
-                            <span v-html="rightAnswer.data.answerText" />
+                            <span>{{ rightAnswer.data.answerText }}</span>
                         </div>
                         <div>
                             <span style="color:red ;margin-right: 10px;">解析</span>
@@ -53,10 +52,7 @@
                     <el-aside width="200px">
                         <div style="color:gray ;">
                             试题描述:{{ questionInfo.data.describe }}
-
                         </div>
-                        <el-button v-if="!isFavorite" type="warning" :icon="Star" circle @click="addFavorite" />
-                        <el-button v-if="isFavorite" type="warning" :icon="StarFilled" circle @click="delFavorite" />
                     </el-aside>
                     <el-main>
                         <el-row>
@@ -80,11 +76,7 @@
     </el-card>
 </template>
 <script setup>
-import {
-    Star,
-    StarFilled
-} from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import code from '@/api/code';
 import link from '@/api/link';
@@ -92,7 +84,6 @@ import url from '@/api/url';
 import MdEditor from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import { useStore } from 'vuex';
-import { isQuestionFavorite, addFavoriteQuestion, deleteFavoriteQuestion } from '../../../api/api';
 
 const store = useStore();
 
@@ -103,15 +94,10 @@ MdEditor.config({
 });
 
 const props = defineProps({
-    qid: Number,
-    cid: Number,
+    qid: Number
 })
 const questionId = ref(0);
-const chapterId = ref(0);
-/**
- * 跳过已作答题目
- */
-const skipAnswered = ref(true);
+
 /**
  * 题目详细信息
  */
@@ -143,15 +129,12 @@ const questionType = computed(() => {
  * 获取问题详细信息
  * @param qid 问题ID
  */
-const getQuestionInfo = async (qid, callback) => {
+const getQuestionInfo = async (qid) => {
     const response = await link(url.question.getQuestionById(qid), "get");
     if (response.data.code == code.NORMAL_SUCCESS) {
         questionInfo.data = response.data.data
-        callback(questionInfo.data);
-        return
     } else {
         ElMessage.error(response.data.msg);
-        callback('');
     }
 }
 /**
@@ -168,7 +151,6 @@ const getOptionInfo = async (qid) => {
         optionInfo.data = response.data.data
     } else {
         ElMessage.error(response.data.msg);
-        optionInfo.data = {};
     }
 }
 
@@ -180,53 +162,17 @@ const selectInfo = reactive({
     E: false,
     F: false,
 })
-const isFavorite = ref(false);
 watch(
     questionId,
-    async (val) => {
+    (val) => {
         for (let o in selectInfo) {
             selectInfo[o] = false;
         }
         if (questionInfo.data.typeId != 3) {
             getOptionInfo(val)
         }
-
-        const response = await isQuestionFavorite(val, store.state.username);
-        if (response.data.code == code.NORMAL_SUCCESS) {
-            isFavorite.value = response.data.data;
-        }
     }
 )
-const addFavorite = () => {
-    ElMessageBox.confirm(
-        '确认添加到收藏夹?',
-        '收藏题目',
-        { confirmButtonText: '确认', cancelButtonText: '取消', type: 'success', }
-    ).then(async () => {
-        const response = await addFavoriteQuestion(questionId.value, store.state.username);
-        if (response.data.code == code.NORMAL_SUCCESS) {
-            ElMessage.success(response.data.msg);
-            isFavorite.value = true;
-        } else {
-            ElMessage.error(response.data.msg);
-        }
-    }).catch(() => { })
-}
-const delFavorite = () => {
-    ElMessageBox.confirm(
-        '确认将该题从收藏夹删除?',
-        '收藏题目',
-        { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
-    ).then(async () => {
-        const response = await deleteFavoriteQuestion(questionId.value, store.state.username);
-        if (response.data.code == code.NORMAL_SUCCESS) {
-            ElMessage.success(response.data.msg);
-            isFavorite.value = false;
-        } else {
-            ElMessage.error(response.data.msg);
-        }
-    }).catch(() => { })
-}
 const handelSelect = (key) => {
     if (questionInfo.data.typeId == 1) {
         for (let val in selectInfo) {
@@ -252,13 +198,8 @@ const isQuestionAnswered = async (qid) => {
 }
 
 const questionList = reactive({ data: [] })
-const getQuestionList = async (cid) => {
-    const response = await link(url.question.getQuestionByChapterId(cid), "get");
-    if (response.data.code == code.NORMAL_SUCCESS) {
-        questionList.data = response.data.data;
-    } else {
-        ElMessage.error(response.data.msg);
-    }
+const getQuestionList = () => {
+        questionList.data = store.state.wrongQuestionList;
 }
 /**
  * 正确答案是否可见
@@ -272,12 +213,11 @@ const rightAnswer = reactive({ data: {} })
  * 获取题目正确答案以及答题详细
  * @param {Number} qid 
  */
-const getAnswerDetail = async (qid, questionType = 1) => {
+const getAnswerDetail = async (qid) => {
     const response = await link(url.questionRightAnswer.get(qid), "get");
     if (response.data.code == code.NORMAL_SUCCESS) {
         rightAnswer.data = response.data.data
-        console.log(questionInfo.typeId);
-        if (questionType != 3) {
+        if (questionInfo.typeId != 3) {
             let ans = response.data.data.rightAnswer;
             for (let o in selectInfo) {
                 selectInfo[o] = false;
@@ -287,7 +227,7 @@ const getAnswerDetail = async (qid, questionType = 1) => {
                 selectInfo[ans[o]] = true;
             }
         } else {
-            editorText.value = rightAnswer.data.answerText;
+            editorText.value = response.data.data.answerText;
         }
     }
     else {
@@ -313,20 +253,10 @@ const questionPrev = async () => {
         }
     }
     let status = await isQuestionAnswered(questionList.data[index].id);
-    if (skipAnswered.value == true) {
-        while (status == true) {
-            if (index - 1 < 0) {
-                ElMessage.info("前面的题目已经都做过了");
-                return;
-            }
-            index--;
-            status = await isQuestionAnswered(questionList.data[index].id);
-        }
-    }
     questionInfo.data = questionList.data[index]
     questionId.value = questionList.data[index].id
     if (status == true) {
-        getAnswerDetail(questionId.value, questionInfo.data.typeId);
+        getAnswerDetail(questionId.value);
         answerVisible.value = true;
     }
 }
@@ -348,20 +278,10 @@ const questionNext = async () => {
         }
     }
     let status = await isQuestionAnswered(questionList.data[index].id);
-    if (skipAnswered.value == true) {
-        while (status == true) {
-            if (index + 1 == questionList.data.length) {
-                ElMessage.info("后的题目已经都做过了");
-                return;
-            }
-            index++;
-            status = await isQuestionAnswered(questionList.data[index].id);
-        }
-    }
     questionInfo.data = questionList.data[index]
     questionId.value = questionList.data[index].id
     if (status == true) {
-        getAnswerDetail(questionId.value, questionInfo.data.typeId);
+        getAnswerDetail(questionId.value);
         answerVisible.value = true;
     }
 }
@@ -398,7 +318,7 @@ const submitAnswer = async (data, qid) => {
     }
     const response = await link(url.question.answer, "post", ans);
     if (response.data.code == code.NORMAL_SUCCESS) {
-        getAnswerDetail(qid, questionId.data.typeId);
+        getAnswerDetail(qid);
         answerVisible.value = true;
     }
     else {
@@ -427,15 +347,13 @@ const answerQuestion = () => {
     submitAnswer(ans, questionId.value);
 }
 onMounted(async () => {
+    getQuestionList();
+    getQuestionInfo(props.qid);
+    console.log(props.qid)
     questionId.value = props.qid;
-    chapterId.value = props.cid;
-    getQuestionList(props.cid);
-    getQuestionInfo(props.qid, async (data) => {
-        const answered = await isQuestionAnswered(questionId.value);
-        answerVisible.value = answered;
-        if (answered) getAnswerDetail(questionId.value, data.typeId);
-    });
-
+    const answered = await isQuestionAnswered(questionId.value);
+    answerVisible.value = answered;
+    if (answered) getAnswerDetail(questionId.value);
 })
 </script>
 <style scoped>

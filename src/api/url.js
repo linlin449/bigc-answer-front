@@ -109,6 +109,11 @@ let url = {
       return "/api/subject/delete/"+subjectId;
     },
     update: "/api/subject/update"
+  },
+  wrongQuestion:{
+    get:(page,username)=>{
+      return "/api/question/list/"+page+"/wrong/"+username;
+    }
   }
 };
 
