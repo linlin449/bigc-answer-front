@@ -1,19 +1,13 @@
 <template>
-    <el-card class="box-card">
-        <template #header>
-            <div class="card-header">
-                <span>答题</span>
-            </div>
-        </template>
+    <el-dialog :model-value="props.dialogTableVisible" width="70%" top="20px" title="题目详细" @open="handelOpen"
+        @closed="emit('before-close')">
         <el-container>
             <el-container>
                 <el-aside width="200px">
                     <el-space direction="vertical" alignment="flex-start" class="box-left">
-                        <span>用户名:{{ store.state.username }}</span>
                         <span>难度:{{ questionLevel }}</span>
                         <span>分值:{{ questionInfo.data.score }}</span>
                         <span>题型:<span style="color: red;">{{ questionType }}</span></span>
-                        <el-checkbox v-model="skipAnswered">跳过已做题</el-checkbox>
                     </el-space>
                     <div class="divider" />
                 </el-aside>
@@ -21,16 +15,14 @@
                     <div v-html="questionInfo.data.question" class="question-title" />
                     <!-- 选项 -->
                     <div v-for="(_, key) in selectInfo" class="question-option" v-show="questionInfo.data.typeId != 3">
-                        <el-checkbox v-model="selectInfo[key]" size="large"
+                        <el-checkbox disabled v-model="selectInfo[key]" size="large"
                             v-show="optionInfo.data[key.toLowerCase()] != null" @change="handelSelect(key)"
                             style="width:100% ;height: auto;">
                             <span>{{ key }}.</span><span v-html="optionInfo.data[key.toLowerCase()]"></span>
                         </el-checkbox>
                     </div>
                     <!-- 简答 -->
-                    <md-editor @on-upload-img="onUploadImg" @onHtmlChanged="handelHtmlChange" v-model="editorText"
-                        placeholder="在此输入你的答案,支持markdown格式" v-show="questionInfo.data.typeId == 3">
-                    </md-editor>
+                    <div v-html="editorText" v-show="questionInfo.data.typeId == 3" class="answer-text" />
                     <div v-show="answerVisible">
                         <div>
                             <span style="color:red ;margin-right: 10px;">正确答案</span>
@@ -53,31 +45,14 @@
                     <el-aside width="200px">
                         <div style="color:gray ;">
                             试题描述:{{ questionInfo.data.describe }}
-
                         </div>
                         <el-button v-if="!isFavorite" type="warning" :icon="Star" circle @click="addFavorite" />
                         <el-button v-if="isFavorite" type="warning" :icon="StarFilled" circle @click="delFavorite" />
                     </el-aside>
-                    <el-main>
-                        <el-row>
-                            <el-col :span="12">
-                                <div class="grid-content ep-bg-purple"></div>
-                            </el-col>
-                            <el-col :span="4">
-                                <el-button type="info" @click="questionPrev">上一题</el-button>
-                            </el-col>
-                            <el-col :span="4">
-                                <el-button type="primary" @click="questionNext">下一题</el-button>
-                            </el-col>
-                            <el-col :span="4">
-                                <el-button type="success" auto-insert-space @click="answerQuestion">提交</el-button>
-                            </el-col>
-                        </el-row>
-                    </el-main>
                 </el-container>
             </el-footer>
         </el-container>
-    </el-card>
+    </el-dialog>
 </template>
 <script setup>
 import {
@@ -85,14 +60,20 @@ import {
     StarFilled
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import code from '@/api/code';
-import link from '@/api/link';
-import url from '@/api/url';
 import MdEditor from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import { useStore } from 'vuex';
-import { isQuestionFavorite, addFavoriteQuestion, deleteFavoriteQuestion } from '../../../api/api';
+import {
+    isQuestionFavorite,
+    addFavoriteQuestion,
+    deleteFavoriteQuestion,
+    getQuestionById,
+    getOptionById,
+    checkQuestionStatus,
+    getRightAnswerById
+} from '../api/api';
 
 const store = useStore();
 
@@ -103,15 +84,15 @@ MdEditor.config({
 });
 
 const props = defineProps({
-    qid: Number,
-    cid: Number,
+    dialogTableVisible: Boolean,
+    qid: Number
 })
+
+const emit = defineEmits([
+    "before-close"
+])
 const questionId = ref(0);
-const chapterId = ref(0);
-/**
- * 跳过已作答题目
- */
-const skipAnswered = ref(true);
+
 /**
  * 题目详细信息
  */
@@ -144,14 +125,13 @@ const questionType = computed(() => {
  * @param qid 问题ID
  */
 const getQuestionInfo = async (qid, callback) => {
-    const response = await link(url.question.getQuestionById(qid), "get");
+    const response = await getQuestionById(qid);
     if (response.data.code == code.NORMAL_SUCCESS) {
         questionInfo.data = response.data.data
-        callback(questionInfo.data);
-        return
+        callback(questionInfo.data)
     } else {
         ElMessage.error(response.data.msg);
-        callback('');
+        callback('')
     }
 }
 /**
@@ -163,11 +143,10 @@ const optionInfo = reactive({ data: {} })
  * @param qid 问题ID
  */
 const getOptionInfo = async (qid) => {
-    const response = await link(url.questionOption.get(qid), "get");
+    const response = await getOptionById(qid)
     if (response.data.code == code.NORMAL_SUCCESS) {
         optionInfo.data = response.data.data
     } else {
-        ElMessage.error(response.data.msg);
         optionInfo.data = {};
     }
 }
@@ -227,19 +206,12 @@ const delFavorite = () => {
         }
     }).catch(() => { })
 }
-const handelSelect = (key) => {
-    if (questionInfo.data.typeId == 1) {
-        for (let val in selectInfo) {
-            if (val != key) selectInfo[val] = false
-        }
-    }
-}
 /**
  * 检查某题答题状态
  * @param {Number} qid 问题ID
  */
 const isQuestionAnswered = async (qid) => {
-    const response = await link(url.question.checkQuestionStatus(qid, store.state.username), "get");
+    const response = await checkQuestionStatus(qid, store.state.username);
     if (response.data.code == code.NORMAL_SUCCESS) {
         if (response.data.data.answerRight != null) {
             return true;
@@ -248,16 +220,6 @@ const isQuestionAnswered = async (qid) => {
     } else {
         ElMessage.error(response.data.msg);
         return false;
-    }
-}
-
-const questionList = reactive({ data: [] })
-const getQuestionList = async (cid) => {
-    const response = await link(url.question.getQuestionByChapterId(cid), "get");
-    if (response.data.code == code.NORMAL_SUCCESS) {
-        questionList.data = response.data.data;
-    } else {
-        ElMessage.error(response.data.msg);
     }
 }
 /**
@@ -272,12 +234,11 @@ const rightAnswer = reactive({ data: {} })
  * 获取题目正确答案以及答题详细
  * @param {Number} qid 
  */
-const getAnswerDetail = async (qid, questionType = 1) => {
-    const response = await link(url.questionRightAnswer.get(qid), "get");
+const getAnswerDetail = async (qid, typeId = 1) => {
+    const response = await getRightAnswerById(qid)
     if (response.data.code == code.NORMAL_SUCCESS) {
         rightAnswer.data = response.data.data
-        console.log(questionInfo.typeId);
-        if (questionType != 3) {
+        if (typeId != 3) {
             let ans = response.data.data.rightAnswer;
             for (let o in selectInfo) {
                 selectInfo[o] = false;
@@ -287,8 +248,7 @@ const getAnswerDetail = async (qid, questionType = 1) => {
                 selectInfo[ans[o]] = true;
             }
         } else {
-            console.log('aaaaaaaaaaaaaaaaaa');
-            editorText.value = rightAnswer.data.answerText;
+            editorText.value = response.data.data.answerText;
         }
     }
     else {
@@ -296,76 +256,7 @@ const getAnswerDetail = async (qid, questionType = 1) => {
     }
 }
 
-/**
- * 上一题
- */
-const questionPrev = async () => {
-    answerVisible.value = false;
-    let index = 0;
-    for (let i = 0; i < questionList.data.length; i++) {
-        if (questionList.data[i].id == questionId.value) {
-            if (i == 0) {
-                ElMessage.info("当前已经是第一道题")
-                return;
-            } else {
-                index = i - 1;
-                break;
-            }
-        }
-    }
-    let status = await isQuestionAnswered(questionList.data[index].id);
-    if (skipAnswered.value == true) {
-        while (status == true) {
-            if (index - 1 < 0) {
-                ElMessage.info("前面的题目已经都做过了");
-                return;
-            }
-            index--;
-            status = await isQuestionAnswered(questionList.data[index].id);
-        }
-    }
-    questionInfo.data = questionList.data[index]
-    questionId.value = questionList.data[index].id
-    if (status == true) {
-        getAnswerDetail(questionId.value, questionInfo.data.typeId);
-        answerVisible.value = true;
-    }
-}
-/**
- * 下一题
- */
-const questionNext = async () => {
-    answerVisible.value = false;
-    let index = 0;
-    for (let i = 0; i < questionList.data.length; i++) {
-        if (questionList.data[i].id == questionId.value) {
-            if (i == questionList.data.length - 1) {
-                ElMessage.info("当前已经是最后一题")
-                return;
-            } else {
-                index = i + 1;
-                break;
-            }
-        }
-    }
-    let status = await isQuestionAnswered(questionList.data[index].id);
-    if (skipAnswered.value == true) {
-        while (status == true) {
-            if (index + 1 == questionList.data.length) {
-                ElMessage.info("后的题目已经都做过了");
-                return;
-            }
-            index++;
-            status = await isQuestionAnswered(questionList.data[index].id);
-        }
-    }
-    questionInfo.data = questionList.data[index]
-    questionId.value = questionList.data[index].id
-    if (status == true) {
-        getAnswerDetail(questionId.value, questionInfo.data.typeId);
-        answerVisible.value = true;
-    }
-}
+
 /**
  * md-editor绑定内容
  */
@@ -377,67 +268,17 @@ const editorHtml = ref('');
 const handelHtmlChange = (html) => {
     editorHtml.value = html;
 }
-const onUploadImg = (files) => {
-    for (var i = 0; i < files.length; i++) {
-        var reader = new FileReader();
-        reader.readAsDataURL(files[i]);
-        reader.onload = function (e) {
-            const base64Img = e.target.result
-            editorText.value = editorText.value + "<img src='" + base64Img + "'/>";
-        }
-    }
-}
-/**
- * 提交问题答案
- * @param {*} data 答案数据 
- * @param {Number} qid 问题ID
- */
-const submitAnswer = async (data, qid) => {
-    const ans = {
-        answer: data,
-        questionID: qid
-    }
-    const response = await link(url.question.answer, "post", ans);
-    if (response.data.code == code.NORMAL_SUCCESS) {
-        getAnswerDetail(qid, questionId.data.typeId);
-        answerVisible.value = true;
-    }
-    else {
-        ElMessage.error(response.data.msg);
-    }
-}
-/**
- * 答题
- */
-const answerQuestion = () => {
-    let ans = '';
-    if (questionInfo.data.typeId != 3) {
-        for (let o in selectInfo) {
-            if (selectInfo[o] == true) {
-                ans = ans + o + '-';
-            }
-        }
-        ans = ans.substring(0, ans.length - 1);
-    } else {
-        ans = editorHtml.value;
-    }
-    if (ans.length == 0) {
-        ElMessage.error("答案不能为空");
-        return;
-    }
-    submitAnswer(ans, questionId.value);
-}
-onMounted(async () => {
+
+const handelOpen = async () => {
     questionId.value = props.qid;
-    chapterId.value = props.cid;
-    getQuestionList(props.cid);
     getQuestionInfo(props.qid, async (data) => {
         const answered = await isQuestionAnswered(questionId.value);
         answerVisible.value = answered;
         if (answered) getAnswerDetail(questionId.value, data.typeId);
     });
 
-})
+
+}
 </script>
 <style scoped>
 .box-card {
@@ -487,5 +328,13 @@ onMounted(async () => {
 .question-option span {
     display: inline-block;
     margin-right: 15px;
+}
+
+.answer-text {
+    min-height: 100px;
+    margin-top: 20px;
+    border: 1px solid;
+    padding-top: 10px;
+    padding-left: 10px;
 }
 </style>
