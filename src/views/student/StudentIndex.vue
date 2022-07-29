@@ -57,8 +57,9 @@ const getStudentInfo = async () => {
     studentInfo.data = response.data.data.student;
   }
 };
-onMounted(() => {
-  getStudentInfo();
+onMounted(async() => {
+  await getStudentInfo();
+  handelSelect('answerStudent')
 });
 </script>
 

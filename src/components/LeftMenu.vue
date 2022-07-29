@@ -84,6 +84,7 @@ const handelSelect = (index) => {
 onMounted(() => {
   // 从路由获取并设置默认激活页面
   activeMenu.value = router.currentRoute.value.name;
+  handelSelect('questionAdmin')
 });
 </script>
 

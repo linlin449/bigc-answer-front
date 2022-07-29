@@ -129,9 +129,10 @@ import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
+import store from "../../../store/index.js";
 const ErrorCode = code;
 const router = useRouter();
-let currentChapterId = 1;
+let currentChapterId = "";
 /**
  * 课程和对应的章节数据
  */
@@ -150,22 +151,11 @@ let getChapter = async () => {
     return ElMessage.error(response.data.msg);
   }
   MenuData.data = response.data.data;
-  MenuData.data.forEach((e) => {
-    e.chapters.forEach((e1) => {
-      e1.current = false;
-    });
-  });
-  MenuData.data[0].chapters[0].current = true;
+ currentChapterId=MenuData.data[0].chapters[0].id
 };
 let clickChapterMenu = (val) => {
-  if (val.current) return;
-  MenuData.data.forEach((element) => {
-    element.chapters.forEach((e) => {
-      e.current = false;
-    });
-  });
-  val.current = true;
   currentChapterId = val.id;
+  store.commit('setcurrentChapter',currentChapterId)
   getQuestionByChapterId(val.id); //根据chapterid查询question
 };
 /**
@@ -191,9 +181,10 @@ let clickRow = (row, column, event) => {
 /**
  * 初始化
  */
-onMounted(() => {
-  getChapter();
-  getQuestionByChapterId(1);
+onMounted(async() => {
+  await getChapter();
+  currentChapterId=store.state.currentChapterId
+  await getQuestionByChapterId(currentChapterId);
 });
 </script>
 

@@ -9,9 +9,13 @@ export default createStore({
     chapterId:1,
     questionId:"",
     wrongQuestionList:"",
+    currentChapterId:""
   },
   getters: {},
   mutations: {
+    setcurrentChapter(state,val){
+      state.currentChapterId=val
+    },
     setwrongQuestionList(state,value){
       state.wrongQuestionList=""
       state.wrongQuestionList=value
