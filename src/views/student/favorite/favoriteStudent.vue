@@ -25,7 +25,7 @@
     <el-pagination background layout="prev, pager, next" :total="favotireQuestion.total"
       v-model:currentPage="favotireQuestion.current" :page-size="favotireQuestion.size" />
     <QuestionDetail :qid="questionId" v-model:dialogTableVisible="dialogTableVisible"
-      @before-close="dialogTableVisible = false">
+      @before-close="dialogTableVisible = false; isEdit = false">
       <span>我的笔记:</span>
       <div class="default-theme" v-html="favotireQuestion.note[clickIndex]"
         style="border:1px solid cornflowerblue;min-height:100px ;" v-show="!isEdit"></div>
@@ -148,7 +148,9 @@ const onUploadImg = (files) => {
 }
 const handelEdit = () => {
   isEdit.value = true;
-  editorText.value = favotireQuestion.note[clickIndex.value]
+  if (favotireQuestion.note[clickIndex.value] != null) {
+    editorText.value = favotireQuestion.note[clickIndex.value]
+  }
 }
 const updateNote = async () => {
   const response = await updateQuestionNote(questionId.value, store.state.username, editorHtml.value)
