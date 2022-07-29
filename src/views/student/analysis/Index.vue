@@ -41,6 +41,9 @@
         :total="wrongQuestionPage.data.total" @current-change="handleCurrentChange" />
     </div>
     <StudentAnalysVue :dialogTableVisible="analysShow" :username="store.state.username" @before-close="analysShow = false" />
+     <QuestionDetail :qid="questionId" v-model:dialogTableVisible="dialogTableVisible"
+      @before-close="dialogTableVisible = false; isEdit = false">
+    </QuestionDetail>
 </template>
 
 <script setup>
@@ -56,8 +59,16 @@ import * as check from "@/util/verfifcation.js";
 import { ElMessage } from "element-plus";
 import { useStore } from 'vuex';
 import StudentAnalysVue from '@/components/StudentAnalys.vue';
+import QuestionDetail from '@/components/QuestionDetail.vue'
 const store = useStore();
 const { cookies } = useCookies()
+const dialogTableVisible = ref(false);
+let questionId=ref('')
+// 鼠标点击题目事件
+let clickRow = (row, column, event) => {
+    dialogTableVisible.value=true
+    questionId.value=row.id
+};
 
 let analysShow=ref(false)
 let TotalInfo=()=>{
@@ -77,22 +88,13 @@ let getCurrentPageWrongQuestion = async (currentPage, username) => {
     } else {
         wrongQuestionPage.data = response.data.data;
         wrongQuestionPage.data.records=sortQuestion(response.data.data.records);
-        store.commit("setwrongQuestionList", response.data.data.records);
-        console.log(wrongQuestionPage)
     }
 }
 const handleCurrentChange = (currentPage) => {
   getCurrentPageWrongQuestion(currentPage, currentUsername);
 }
 
-//TODO 鼠标点击题目事件
-let clickRow = (row, column, event) => {
-    console.log("0000000000"+row.id)
-  router.push({
-    name: "wrongQuestion",
-    params: { qid: row.id },
-  });
-};
+
 
 //然后点击具体错题可进入详细页面就和答题界面类似
 //可增加笔记，

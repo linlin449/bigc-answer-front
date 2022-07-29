@@ -24,12 +24,6 @@ const routes = [
         
       },
       {
-        path: "wrong/:qid",
-        name: "wrongQuestion",
-        component: () => import("../views/student/analysis/wrongQuestionDetil.vue"),
-        props: true,
-      },
-      {
         path: "answer",
         name: "answerStudent",
         component: () => import("../views/student/answer/StudentAnswer.vue"),

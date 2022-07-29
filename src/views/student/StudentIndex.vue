@@ -15,10 +15,6 @@
           >
             <svg-icon class-name="size-icon" icon="user" />
             <span>{{ studentInfo.data.name }}</span>
-            <div class="msg" v-if="flag">
-              <p @click="manage()">个人信息</p>
-              <p class="exit" @click="exit()">退出</p>
-            </div>
           </li>
         </ul>
       </el-col>
@@ -47,8 +43,6 @@ let flag = ref(false);
 let handelSelect = (index) => {
   router.push({ name: index });
 };
-let manage = () => {};
-let exit = () => {};
 // 学生信息
 const studentInfo = reactive({ data: {} });
 const getStudentInfo = async () => {
@@ -64,6 +58,9 @@ onMounted(async() => {
 </script>
 
 <style lang="scss" scoped>
+#student{
+  height: 100%;
+}
 .right {
   margin-right: 6px;
 }

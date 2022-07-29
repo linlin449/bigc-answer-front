@@ -1,11 +1,6 @@
 <template>
   <div id="Answer">
-    <el-dropdown
-      v-for="v in MenuData.data"
-      class="subject-box"
-      :key="v.subject_id"
-      size="large"
-    >
+    <el-dropdown v-for="v in MenuData.data" class="subject-box" :key="v.subject_id" size="large">
       <el-button type="primary">
         <span class="el-dropdown-link">
           {{ v.subjectname }}
@@ -16,105 +11,50 @@
       </el-button>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item
-            v-for="val in v.chapters"
-            :key="val.id"
-            @click="clickChapterMenu(val)"
-            >{{ val.name }}</el-dropdown-item
-          >
+          <el-dropdown-item v-for="val in v.chapters" :key="val.id" @click="clickChapterMenu(val)">{{ val.name }}
+          </el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
     <div class="question-box">
-      <el-table
-        @row-click="clickRow"
-        :data="tableData.data"
-        border
-        style="width: 100%"
-        :row-class-name="tableRowClassName"
-      >
-        <el-table-column
-          prop="title"
-          label="问题"
-          header-align="center"
-          show-overflow-tooltip
-        >
-        <template #default="scope">
-        <div style="display: flex; align-items: center" v-html="scope.row.title"/>
-    </template>
+      <el-table @row-click="clickRow" :data="tableData.data" border style="width: 100%"
+        :row-class-name="tableRowClassName">
+        <el-table-column prop="title" label="问题" header-align="center" show-overflow-tooltip>
+          <template #default="scope">
+            <div style="display: flex; align-items: center" v-html="scope.row.title" />
+          </template>
         </el-table-column>
-        <el-table-column
-          prop="describe"
-          label="描述"
-          width="180"
-          header-align="center"
-        />
-        <el-table-column
-          prop="score"
-          label="分数"
-          width="80"
-          align="center"
-          header-align="center"
-          sortable
-        >
+        <el-table-column prop="describe" label="描述" width="180" header-align="center" />
+        <el-table-column prop="score" label="分数" width="80" align="center" header-align="center" sortable>
           <template #default="scope">
             <el-tag type="info" round disable-transitions>{{
-              scope.row.score
+                scope.row.score
             }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="level"
-          label="难度"
-          width="80"
-          align="center"
-          header-align="center"
-        >
+        <el-table-column prop="level" label="难度" width="80" align="center" 
+        :filters="[
+          { text: '困难', value: '困难' },
+          { text: '简单', value: '简单' },
+          { text: '中等', value: '中等' },
+        ]" 
+        :filter-method="filterTag" 
+        filter-placement="bottom-end" 
+        header-align="center">
           <template #default="scope">
-            <el-tag
-              v-if="scope.row.level === '困难'"
-              type="danger"
-              disable-transitions
-              >{{ scope.row.level }}</el-tag
-            >
-            <el-tag
-              v-if="scope.row.level === '简单'"
-              type="success"
-              disable-transitions
-              >{{ scope.row.level }}</el-tag
-            >
-            <el-tag
-              v-if="scope.row.level === '中等'"
-              type="warning"
-              disable-transitions
-              >{{ scope.row.level }}</el-tag
-            >
+            <el-tag v-if="scope.row.level === '困难'" type="danger" disable-transitions>{{ scope.row.level }}</el-tag>
+            <el-tag v-if="scope.row.level === '简单'" type="success" disable-transitions>{{ scope.row.level }}</el-tag>
+            <el-tag v-if="scope.row.level === '中等'" type="warning" disable-transitions>{{ scope.row.level }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="type"
-          label="类型"
-          width="80"
-          align="center"
-          header-align="center"
-          ><template #default="scope">
+        <el-table-column prop="type" label="类型" width="80" align="center" header-align="center"><template
+            #default="scope">
             <el-tag v-if="scope.row.type === '单选'" disable-transitions>{{
-              scope.row.type
+                scope.row.type
             }}</el-tag>
-            <el-tag
-              v-if="scope.row.type === '多选'"
-              type="success"
-              disable-transitions
-              >{{ scope.row.type }}</el-tag
-            >
-            <el-tag
-              v-if="scope.row.type === '简答'"
-              type="info"
-              disable-transitions
-              >{{ scope.row.type }}</el-tag
-            >
-          </template></el-table-column
-        >
+            <el-tag v-if="scope.row.type === '多选'" type="success" disable-transitions>{{ scope.row.type }}</el-tag>
+            <el-tag v-if="scope.row.type === '简答'" type="info" disable-transitions>{{ scope.row.type }}</el-tag>
+          </template></el-table-column>
       </el-table>
     </div>
   </div>
@@ -133,6 +73,11 @@ import store from "../../../store/index.js";
 const ErrorCode = code;
 const router = useRouter();
 let currentChapterId = "";
+
+const filterTag = (value,row) => {
+  return row.level === value
+}
+
 /**
  * 课程和对应的章节数据
  */
@@ -151,11 +96,11 @@ let getChapter = async () => {
     return ElMessage.error(response.data.msg);
   }
   MenuData.data = response.data.data;
- currentChapterId=MenuData.data[0].chapters[0].id
+  currentChapterId = MenuData.data[0].chapters[0].id
 };
 let clickChapterMenu = (val) => {
   currentChapterId = val.id;
-  store.commit('setcurrentChapter',currentChapterId)
+  store.commit('setcurrentChapter', currentChapterId)
   getQuestionByChapterId(val.id); //根据chapterid查询question
 };
 /**
@@ -181,9 +126,9 @@ let clickRow = (row, column, event) => {
 /**
  * 初始化
  */
-onMounted(async() => {
+onMounted(async () => {
   await getChapter();
-  currentChapterId=store.state.currentChapterId
+  currentChapterId = store.state.currentChapterId
   await getQuestionByChapterId(currentChapterId);
 });
 </script>
@@ -193,11 +138,13 @@ onMounted(async() => {
   width: 980px;
   margin: 0 auto;
 }
+
 #Answer .subject-box {
   margin: 20px;
   margin-left: 0px;
   cursor: pointer;
 }
+
 #Answer .subject-box .title {
   cursor: pointer;
   margin-top: 10px;
@@ -210,6 +157,7 @@ onMounted(async() => {
   color: rgb(13, 13, 13);
   border-radius: 8px;
 }
+
 #Answer .subject-box .chapter-menu {
   padding: 0;
 }
@@ -217,6 +165,7 @@ onMounted(async() => {
 #Answer .subject-box .chapter-menu {
   padding: 0;
 }
+
 #Answer .subject-box .chapter-menu li {
   text-align: center;
   cursor: pointer;
@@ -228,12 +177,13 @@ onMounted(async() => {
   color: rgb(62, 60, 60);
   border-radius: 8px;
 }
+
 #Answer .subject-box .chapter-menu li:hover {
   background-color: #9ed1f7;
   transition: all 1.5s ease;
 }
+
 #Answer .subject-box .chapter-menu .current {
   background-color: #9ed1f7;
 }
-
 </style>

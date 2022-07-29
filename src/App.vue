@@ -18,7 +18,7 @@ a {
 }
 #app {
   font-family: "Microsoft YaHei", "Helvetica", "Tahoma", "Geneva", "Arial", sans-serif;
-  background-color: rgb(207, 202, 202);
+  background-color: rgb(207, 202, 202,0.7);
 }
 html,body,#app{
     height: 100%;
