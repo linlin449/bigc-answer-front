@@ -8,17 +8,12 @@ export default createStore({
     isAdd:true,//true 是添加题目
     chapterId:1,
     questionId:"",
-    wrongQuestionList:"",
     currentChapterId:""
   },
   getters: {},
   mutations: {
     setcurrentChapter(state,val){
       state.currentChapterId=val
-    },
-    setwrongQuestionList(state,value){
-      state.wrongQuestionList=""
-      state.wrongQuestionList=value
     },
     setUsername(state, val) {
       state.username = val;
