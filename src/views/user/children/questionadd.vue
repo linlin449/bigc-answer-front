@@ -1,78 +1,58 @@
 <template>
+  <el-dialog v-model="dialogVisible" title="Tips" width="800px" @open="open" :before-close="handleClose">
+    <md-editor editorId="no" :toolbars="toolbars" v-model="editInfo" @on-upload-img="onUploadImg"
+      @onHtmlChanged="saveHtml" />
+    <el-button text @click="saveInfo">保存</el-button>
+    <el-button text @click="dialogVisible = false">退出</el-button>
+  </el-dialog>
   <el-card class="box-card">
-    <div class="main">
-      <el-dialog
-        v-model="dialogVisible"
-        title="Tips"
-        width="30%"
-        @open="open"
-        :before-close="handleClose"
-      >
-        <md-editor
-          editorId="no"
-          :toolbars="toolbars"
-          v-model="editInfo"
-          @on-upload-img="onUploadImg"
-          @onHtmlChanged="saveHtml"
-        />
-        <el-button text @click="saveInfo">保存</el-button>
-        <el-button text @click="dialogVisible = false">退出</el-button>
-      </el-dialog>
-
-      <el-form label-width="120px">
-        <el-form-item label="题干">
-          <md-editor
-            class="editor"
-            editorId="one"
-            :html-preview="true"
-            v-model="text.question"
-            :previewOnly="true"
-          />
-          <el-button
-            type="primary"
-            class="option"
-            @click="buttonClick('question')"
-            >编辑</el-button
-          >
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="text.describe" />
-        </el-form-item>
-        <el-form-item label="成绩">
-          <el-input v-model="text.score" />
-        </el-form-item>
-
-        <el-form-item label="课程">
-          <el-select
-            placeholder="请选择课程"
-            v-model="subjectId"
-            @change="changeSubject(subjectId)"
-          >
-            <el-option
-              v-for="v in MenuData.data"
-              :key="v.subjectId"
-              :label="v.subjectname"
-              :value="v.subjectId"
-            />
-           </el-select>
-          <el-form-item label="章节">
-            <el-select placeholder="请选择章节" v-model="chapterId">
-              <el-option
-                v-for="v in chapters.data"
-                :key="v.id"
-                :label="v.name"
-                :value="v.id"
-              />
+    <el-form label-width="120px">
+      <el-form-item label="题干" >
+        <el-row>
+          <el-col :span="24">
+            <div class="default-theme" v-html="text.question"
+              style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+          </el-col>
+          <el-col :span="24">
+            <el-button type="primary" class="option" @click="buttonClick('question')">编辑</el-button>
+          </el-col>
+        </el-row>
+      </el-form-item>
+      <el-form-item label="描述" >
+        <el-input v-model="text.describe" />
+      </el-form-item>
+      <el-form-item label="成绩">
+        <el-input placeholder="请输入0-20的数字" v-model="text.score" />
+      </el-form-item>
+      <el-row>
+        <el-col :span="12">
+          <el-form-item label="课程">
+            <el-select placeholder="请选择课程" v-model="subjectId" @change="changeSubject(subjectId)">
+              <el-option v-for="v in MenuData.data" :key="v.subjectId" :label="v.subjectname" :value="v.subjectId" />
             </el-select>
           </el-form-item>
-        </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="章节">
+            <el-select placeholder="请选择章节" v-model="chapterId">
+              <el-option v-for="v in chapters.data" :key="v.id" :label="v.name" :value="v.id" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="12">
+          <el-form-item label="题型">
+            <el-radio-group v-model="text.type">
+              <el-radio label="单选" />
+              <el-radio label="多选" />
+              <el-radio label="简答" />
+            </el-radio-group>
 
-        <el-form-item label="题型">
-          <el-radio-group v-model="text.type">
-            <el-radio label="单选" />
-            <el-radio label="多选" />
-            <el-radio label="简答" />
-          </el-radio-group>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+
           <el-form-item label="难度">
             <el-radio-group v-model="text.level">
               <el-radio label="简单" />
@@ -80,101 +60,113 @@
               <el-radio label="困难" />
             </el-radio-group>
           </el-form-item>
+        </el-col>
+      </el-row>
+      <template v-if="text.type != '简答'">
+        <el-form-item label="A选项">
+          <el-row>
+            <el-col :span="24">
+              <div class="default-theme" v-html="text.A"
+                style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+            </el-col>
+            <el-col :span="24">
+              <el-button class="option" type="primary" @click="buttonClick('A')">编辑</el-button>
+            </el-col>
+          </el-row>
         </el-form-item>
-
-        <el-form-item label="选项" v-if="text.type != '简答'">
-          <md-editor
-            placeholder="A选项"
-            class="option editor"
-            editorId="two"
-            v-model="text.A"
-            :previewOnly="true"
-          />
-          <el-button class="option" type="primary" @click="buttonClick('A')"
-            >编辑</el-button
-          >
-          <md-editor
-            class="option editor"
-            editorId="two"
-            v-model="text.B"
-            :previewOnly="true"
-          />
-          <el-button class="option" type="primary" @click="buttonClick('B')"
-            >编辑</el-button
-          >
-          <md-editor
-            class="option editor"
-            editorId="two"
-            v-model="text.C"
-            :previewOnly="true"
-          />
-          <el-button class="option" type="primary" @click="buttonClick('C')"
-            >编辑</el-button
-          >
-          <md-editor
-            class="option editor"
-            editorId="two"
-            v-model="text.D"
-            :previewOnly="true"
-          />
-          <el-button class="option" type="primary" @click="buttonClick('D')"
-            >编辑</el-button
-          >
-          <template v-if="text.type == '多选'">
-            <md-editor
-              class="option editor"
-              editorId="two"
-              v-model="text.E"
-              :previewOnly="true"
-            />
-            <el-button class="option" type="primary" @click="buttonClick('E')"
-              >编辑</el-button
-            >
-            <md-editor
-              class="option editor"
-              editorId="two"
-              v-model="text.F"
-              :previewOnly="true"
-            />
-            <el-button class="option" type="primary" @click="buttonClick('F')"
-              >编辑</el-button
-            >
-          </template>
+        <el-form-item label="B选项">
+          <el-row>
+            <el-col :span="24">
+              <div class="default-theme" v-html="text.B"
+                style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+            </el-col>
+            <el-col :span="24">
+              <el-button class="option" type="primary" @click="buttonClick('B')">编辑</el-button>
+            </el-col>
+          </el-row>
         </el-form-item>
+        <el-form-item label="C选项">
+          <el-row>
+            <el-col :span="24">
+              <div class="default-theme" v-html="text.C"
+                style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+            </el-col>
+            <el-col :span="24">
+              <el-button class="option" type="primary" @click="buttonClick('C')">编辑</el-button>
+            </el-col>
+          </el-row>
+        </el-form-item>
+        <el-form-item label="D选项">
+          <el-row>
+            <el-col :span="24">
+              <div class="default-theme" v-html="text.D"
+                style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+            </el-col>
+            <el-col :span="24">
+              <el-button class="option" type="primary" @click="buttonClick('D')">编辑</el-button>
+            </el-col>
+          </el-row>
+        </el-form-item>
+        <template v-if="text.type == '多选'">
+          <el-form-item label="E选项">
+            <el-row>
+              <el-col :span="24">
+                <div class="default-theme" v-html="text.E"
+                  style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+              </el-col>
+              <el-col :span="24">
+                <el-button class="option" type="primary" @click="buttonClick('E')">编辑</el-button>
+              </el-col>
+            </el-row>
+          </el-form-item>
+          <el-form-item label="F选项">
+            <el-row>
+              <el-col :span="24">
+                <div class="default-theme" v-html="text.F"
+                  style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+              </el-col>
+              <el-col :span="24">
+                <el-button class="option" type="primary" @click="buttonClick('F')">编辑</el-button>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </template>
+      </template>
+      <template v-if="text.type != '简答'">
+        <el-form-item label="答案" width="450px">
+          <el-input placeholder="请输入选择题答案大写字母" v-model="text.answer" />
+        </el-form-item>
+      </template>
+      <template v-else>
         <el-form-item label="答案">
-          <md-editor
-            class="editor"
-            editorId="two"
-            v-model="text.answer"
-            :previewOnly="true"
-          />
-          <el-button
-            type="primary"
-            class="option"
-            @click="buttonClick('answer')"
-            >编辑</el-button
-          >
+          <el-row>
+            <el-col :span="24">
+              <div class="default-theme" v-html="text.answer"
+                style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+            </el-col>
+            <el-col :span="24">
+              <el-button class="option" type="primary" @click="buttonClick('answer')">编辑</el-button>
+            </el-col>
+          </el-row>
         </el-form-item>
-        <el-form-item label="解析">
-          <md-editor
-            class="editor"
-            editorId="two"
-            v-model="text.analysis"
-            :previewOnly="true"
-          />
-          <el-button
-            type="primary"
-            class="option"
-            @click="buttonClick('analysis')"
-            >编辑</el-button
-          >
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onSubmit">确定</el-button>
-          <el-button @click="unSave">取消</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+      </template>
+
+      <el-form-item label="解析">
+        <el-row>
+          <el-col :span="24">
+            <div class="default-theme" v-html="text.analysis"
+              style="border:1px solid rgb(217, 216, 216);width: 500px;min-height:100px ;"></div>
+          </el-col>
+          <el-col :span="24">
+            <el-button class="option" type="primary" @click="buttonClick('analysis')">编辑</el-button>
+          </el-col>
+        </el-row>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="onSubmit">确定</el-button>
+        <el-button @click="unSave">取消</el-button>
+      </el-form-item>
+    </el-form>
   </el-card>
 </template>
 <script setup>
@@ -197,20 +189,16 @@ import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { useStore } from "vuex";
 import sortQuestion from "../../../util/sortQuestion.js";
-// import sanitizeHtml from "sanitize-html";
-
-const sanitize = (html) => {
-  return sanitizeHtml(html);
-};
-
+const router = useRouter();
+const store = useStore();
 const ErrorCode = code;
 
 
 
-const router = useRouter();
+//课程和章节
 const MenuData = ref({ data: [] });
-let subjectId = ref();
 let chapters = reactive({ data: [] });
+let subjectId = ref();
 let chapterId = ref();
 let changeSubject = (subjectId) => {
   chapters.data = [];
@@ -234,64 +222,53 @@ let getChapter = async () => {
 };
 
 
-const dialogVisible = ref(false);
+const dialogVisible = ref(false);//编辑框是否出现
+//text和form绑定
 const text = ref({
   questionId: "",
-  question: "题干",
+  question: "",
   describe: "",
   score: "",
   level: "简单",
   type: "单选",
   chapterId: "",
   subjectId: "",
-  A: "A",
-  B: "B",
-  C: "C",
-  D: "D",
-  E: "E",
-  F: "F",
-  answer: "答案",
-  analysis: "解析",
+  A: "",
+  B: "",
+  C: "",
+  D: "",
+  E: "",
+  F: "",
+  answer: "",
+  analysis: "",
 });
-let toolbars = ["revoke", "katex", "next", "image"];
+let toolbars = ["revoke", "katex", "next", "image"];//设置编辑框展示按钮
 const item = ref("question");
-let editInfo = ref("");
 
+
+let editInfo = ref("");
+//编辑按钮按下后，传入对应的item的name
 let buttonClick = (name) => {
   item.value = name;
   dialogVisible.value = true;
 };
+//编辑框打开时
 let open = () => {
-  let arr = ["A", "B", "C", "D", "E", "F", "题干", "答案", "解析"];
-  if (arr.includes(text.value[item.value])) {
-    editInfo.value = "";
-    return;
-  }
   editInfo.value = text.value[item.value];
 };
-let textHtml = {
-  questionId: "",
-  question: "题干",
-  describe: "",
-  score: "",
-  level: "简单",
-  type: "单选",
-  chapterId: "",
-  subjectId: "",
-  A: "A",
-  B: "B",
-  C: "C",
-  D: "D",
-  E: "E",
-  F: "F",
-  answer: "答案",
-  analysis: "解析",
-};
-
+//编辑时将编辑框中的内容转变为
 let editHtmlInfo = "";
 let saveHtml = (html) => {
   editHtmlInfo = html;
 };
+//每次编辑保存时
+let saveInfo = () => {
+  text.value[item.value] = editHtmlInfo;
+  dialogVisible.value = false;
+};
+
+
+//传入图片的操作
 let Imgbase64 = "";
 const onUploadImg = (files) => {
   for (var i = 0; i < files.length; i++) {
@@ -303,33 +280,9 @@ const onUploadImg = (files) => {
     };
   }
 };
-let unSave = () => {};
-let saveInfo = () => {
-  if (editInfo.value === "") {
-    if (item.value === "question") {
-      text.value[item.value] = "题干";
-      textHtml[item.value] == "题干";
-    } else if (item.value === "answer") {
-      text.value[item.value] = "答案";
-      textHtml[item.value] == "答案";
-    } else if (item.value === "analysis") {
-      text.value[item.value] = "解析";
-      textHtml[item.value] == "解析";
-    } else {
-      text.value[item.value] = item.value;
-      textHtml[item.value] == item.value;
-    }
-    dialogVisible.value = false;
-    return;
-  }
-  text.value[item.value] = editInfo.value;
-  textHtml[item.value] = editHtmlInfo;
-  dialogVisible.value = false;
-};
-const store = useStore();
 
+//全部编辑完成提交
 const onSubmit = () => {
-  //增加
   if (store.state.isAdd) {
     addQuestionAllInfo();
   } else {
@@ -337,6 +290,9 @@ const onSubmit = () => {
     router.push({ name: "questionAdmin" });
   }
 };
+
+
+
 let sortLevel = (level) => {
   if (level == "困难") return 3;
   if (level == "简单") return 1;
@@ -347,6 +303,8 @@ let sortType = (type) => {
   if (type == "单选") return 1;
   if (type == "多选") return 2;
 };
+
+
 let getQuestionAllInfo = async (questionId) => {
   let response = await link(url.question.getQuestionById(questionId));
   if (response.data.code !== ErrorCode.NORMAL_SUCCESS) {
@@ -367,23 +325,16 @@ let getQuestionAllInfo = async (questionId) => {
     if (responseOne.data.data == null) {
       return;
     }
-    console.log("dedao" + responseOne.data.data);
     ElMessage.error(response.data.msg);
     return;
   }
   if (q.type != "简答") {
-    text.value.A =
-      responseOne.data.data.a == null ? "A" : responseOne.data.data.a;
-    text.value.B =
-      responseOne.data.data.b == null ? "B" : responseOne.data.data.b;
-    text.value.C =
-      responseOne.data.data.c == null ? "C" : responseOne.data.data.c;
-    text.value.D =
-      responseOne.data.data.d == null ? "D" : responseOne.data.data.d;
-    text.value.E =
-      responseOne.data.data.e == null ? "E" : responseOne.data.data.e;
-    text.value.F =
-      responseOne.data.data.f == null ? "F" : responseOne.data.data.f;
+    text.value.A = responseOne.data.data.a;
+    text.value.B = responseOne.data.data.b;
+    text.value.C = responseOne.data.data.c;
+    text.value.D = responseOne.data.data.d;
+    text.value.E = responseOne.data.data.e;
+    text.value.F = responseOne.data.data.f;
   }
   let responseTwo = await link(url.questionRightAnswer.getRight(questionId));
   if (responseTwo.data.code !== ErrorCode.NORMAL_SUCCESS) {
@@ -395,25 +346,22 @@ let getQuestionAllInfo = async (questionId) => {
   }
   text.value.answer = responseTwo.data.data.rightAnswer;
   text.value.analysis = responseTwo.data.data.analysis;
+
 };
 
 let updateQuestionAllInfo = async (id) => {
-  //传递的参数是question
   let question = {};
   question.id = id;
-  question.question = textHtml.question;
-  console.log(textHtml.question);
+  question.question = text.value.question;
   question.describe = text.value.describe;
   question.score = text.value.score;
   question.levelId = sortLevel(text.value.level);
   question.typeId = sortType(text.value.type);
   question.chapterId = chapterId.value;
   question.subjectId = subjectId.value;
-
   if (!checkScore(question.score)) {
     return;
   }
-
   let responseOne = await link(url.question.update, "put", question);
   if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
     ElMessage.error(responseOne.data.msg);
@@ -421,17 +369,16 @@ let updateQuestionAllInfo = async (id) => {
   } else {
     ElMessage.success("更新成功！");
   }
-
   if (text.value.type != "简答") {
     let questionOption = {};
     questionOption.id = "";
     questionOption.questionId = id;
-    questionOption.a = text.value.A == "A" ? null : textHtml.A;
-    questionOption.b = text.value.B == "B" ? null : textHtml.B;
-    questionOption.c = text.value.C == "C" ? null : textHtml.C;
-    questionOption.d = text.value.D == "D" ? null : textHtml.D;
-    questionOption.e = text.value.E == "E" ? null : textHtml.E;
-    questionOption.f = text.value.F == "F" ? null : textHtml.F;
+    questionOption.a = text.value.A;
+    questionOption.b = text.value.B;
+    questionOption.c = text.value.C;
+    questionOption.d = text.value.D;
+    questionOption.e = text.value.E;
+    questionOption.f = text.value.F;
     let responseTwo = await link(
       url.questionOption.update,
       "put",
@@ -452,8 +399,8 @@ let updateQuestionAllInfo = async (id) => {
   let questionRightAnswer = {};
   questionRightAnswer.id = "";
   questionRightAnswer.questionId = id;
-  questionRightAnswer.rightAnswer = textHtml.answer;
-  questionRightAnswer.analysis = textHtml.analysis;
+  questionRightAnswer.rightAnswer = text.value.answer;
+  questionRightAnswer.analysis = text.value.analysis;
   let responseThree = await link(
     url.questionRightAnswer.update,
     "put",
@@ -471,25 +418,45 @@ let updateQuestionAllInfo = async (id) => {
     }
   }
 };
+
 let checkScore = (score) => {
-  if (score > 20) {
+  let reg=/^[0-20]$/
+  if (!reg.test(score)) {
     ElMessage.error("单个题目，成绩不能大于20");
     return false;
   }
   return true;
 };
+let checkAnswer = (type, answer) => {
+  if (type === "单选") {
+    let arr = ['A', 'B', 'C', 'D']
+    if (!arr.includes(answer)) {
+      ElMessage.error("单选的答案是A-D任意一个");
+      return false;
+    }
+  }
+  if (type === "多选") {
+    let reg=/^[A-E]{2,6}$/
+    if (!reg.test(answer)) {
+      ElMessage.error("多选的答案是A-E至少两个");
+      return false;
+    }
+  }
+    return true;
+}
 let addQuestionAllInfo = async () => {
   let question = {};
-  question.question = textHtml.question;
+  question.question = text.value.question;
   question.describe = text.value.describe;
   question.score = text.value.score;
   question.levelId = sortLevel(text.value.level);
   question.typeId = sortType(text.value.type);
   question.chapterId = chapterId.value;
   question.subjectId = subjectId.value;
-  if (!checkScore(question.score)) {
+  if (!checkScore(question.score)||!checkAnswer(text.value.type,text.value.answer)) {
     return;
   }
+
   let responseOne = await link(url.question.add, "post", question);
   if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
     ElMessage.error(responseOne.data.msg);
@@ -500,12 +467,12 @@ let addQuestionAllInfo = async () => {
   if (text.value.type != "简答") {
     let questionOption = {};
     questionOption.questionId = responseOne.data.data;
-    questionOption.a = text.value.A == "A" ? null : textHtml.A;
-    questionOption.b = text.value.B == "B" ? null : textHtml.B;
-    questionOption.c = text.value.C == "C" ? null : textHtml.C;
-    questionOption.d = text.value.D == "D" ? null : textHtml.D;
-    questionOption.e = text.value.E == "E" ? null : textHtml.E;
-    questionOption.f = text.value.F == "F" ? null : textHtml.F;
+    questionOption.a = text.value.A;
+    questionOption.b = text.value.B;
+    questionOption.c = text.value.C;
+    questionOption.d = text.value.D;
+    questionOption.e = text.value.E;
+    questionOption.f = text.value.F;
     let responseTwo = await link(
       url.questionOption.add,
       "post",
@@ -514,13 +481,13 @@ let addQuestionAllInfo = async () => {
     if (responseTwo.data.code !== ErrorCode.NORMAL_SUCCESS) {
       ElMessage.error(responseTwo.data.msg);
       return;
-    } 
+    }
   }
 
   let questionRightAnswer = {};
   questionRightAnswer.questionId = responseOne.data.data;
-  questionRightAnswer.rightAnswer = textHtml.answer;
-  questionRightAnswer.analysis = textHtml.analysis;
+  questionRightAnswer.rightAnswer = text.value.answer;
+  questionRightAnswer.analysis = text.value.analysis;
   let responseThree = await link(
     url.questionRightAnswer.add,
     "post",
@@ -529,21 +496,21 @@ let addQuestionAllInfo = async () => {
   text.value = {};
   text.value = {
     questionId: "",
-    question: "题干",
+    question: "",
     describe: "",
     score: "",
     level: "简单",
     type: "单选",
     chapterId: "",
     subjectId: "",
-    A: "A",
-    B: "B",
-    C: "C",
-    D: "D",
-    E: "E",
-    F: "F",
-    answer: "答案",
-    analysis: "解析",
+    A: "",
+    B: "",
+    C: "",
+    D: "",
+    E: "",
+    F: "",
+    answer: "",
+    analysis: "",
   };
 };
 
@@ -559,9 +526,10 @@ onUnmounted(() => {
 </script>
 <style scoped>
 .box-card {
-  width: 890px;
+  width: 50%;
   margin-left: 25%;
 }
+
 .editor {
   border: 1px solid rgb(217, 216, 216);
   border-radius: 5px;
@@ -570,6 +538,7 @@ onUnmounted(() => {
 .el-form-item {
   margin-top: 0px;
 }
+
 .option {
   margin-top: 10px;
 }

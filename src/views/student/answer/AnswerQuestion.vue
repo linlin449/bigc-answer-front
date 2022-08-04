@@ -18,9 +18,9 @@
                     <div class="divider" />
                 </el-aside>
                 <el-main>
-                    <div v-html="questionInfo.data.question" class="question-title" />
+                    <div v-html="questionInfo.data.question" class="question-title default-theme" />
                     <!-- 选项 -->
-                    <div v-for="(_, key) in selectInfo" class="question-option" v-show="questionInfo.data.typeId != 3">
+                    <div v-for="(_, key) in selectInfo" class="question-option default-theme" v-show="questionInfo.data.typeId != 3">
                         <el-checkbox v-model="selectInfo[key]" size="large"
                             v-show="optionInfo.data[key.toLowerCase()] != null" @change="handelSelect(key)"
                             style="width:100% ;height: auto;">
@@ -466,13 +466,14 @@ onMounted(async () => {
 .question-title {
     font-size: 25px;
     margin-bottom: 10px;
+    width: 60%;
 }
 
 .question-option {
     border: 1px solid transparent;
     border-radius: 10px;
     font-size: 25px;
-    width: 80%;
+    width: 60%;
     padding-left: 20px;
     transition: 0.5s;
     transition-property: color, background-color, border-color;

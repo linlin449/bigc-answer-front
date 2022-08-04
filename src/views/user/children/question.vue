@@ -36,7 +36,7 @@
           show-overflow-tooltip
         >
         <template #default="scope">
-          <div style="display: flex; align-items: center" v-html="scope.row.title"/>
+          <div class="default-theme" style="display: flex; align-items: center" v-html="scope.row.title"/>
         </template>
         </el-table-column>
         <el-table-column
@@ -144,6 +144,7 @@ import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { useStore } from 'vuex';
+import "md-editor-v3/lib/style.css";
 const ErrorCode = code;
 const store = useStore();
 const router = useRouter();

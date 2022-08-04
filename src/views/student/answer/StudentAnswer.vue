@@ -21,7 +21,7 @@
         :row-class-name="tableRowClassName">
         <el-table-column prop="title" label="问题" header-align="center" show-overflow-tooltip>
           <template #default="scope">
-            <div style="display: flex; align-items: center" v-html="scope.row.title" />
+            <div class="default-theme" style="display: flex; align-items: center" v-html="scope.row.title" />
           </template>
         </el-table-column>
         <el-table-column prop="describe" label="描述" width="180" header-align="center" />
@@ -70,6 +70,7 @@ import sortQuestion from "../../../util/sortQuestion.js";
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import store from "../../../store/index.js";
+import "md-editor-v3/lib/style.css";
 const ErrorCode = code;
 const router = useRouter();
 let currentChapterId = "";
@@ -97,6 +98,9 @@ let getChapter = async () => {
   }
   MenuData.data = response.data.data;
   currentChapterId = MenuData.data[0].chapters[0].id
+  if(!store.state.currentChapterId){
+     store.commit('setcurrentChapter', currentChapterId)
+  }
 };
 let clickChapterMenu = (val) => {
   currentChapterId = val.id;

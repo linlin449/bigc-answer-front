@@ -23,7 +23,6 @@
     <div class="main">
       <router-view></router-view>
     </div>
-    <myfooter></myfooter>
   </div>
 </template>
 
@@ -60,6 +59,7 @@ onMounted(async() => {
 <style lang="scss" scoped>
 #student{
   height: 100%;
+  background-color: rgb(207, 202, 202,0.7);
 }
 .right {
   margin-right: 6px;
