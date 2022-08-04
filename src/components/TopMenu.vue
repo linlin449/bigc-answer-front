@@ -27,7 +27,6 @@ import { useStore } from "vuex";
 import code from "../api/code";
 import link from "../api/link";
 import url from "../api/url";
-import myfooter from "../components/myFooter.vue";
 
 const ErrorCode = code;
 const store = useStore();
