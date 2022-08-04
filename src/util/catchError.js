@@ -5,12 +5,7 @@ const { cookies } = useCookies()
 
 function clearUser() {
     cookies.remove("token")
-    const vuex = JSON.parse(localStorage.getItem("vuex"))
-    if (vuex == null || vuex.role == 1) {
-        window.location.href = "/"
-    } else {
-        window.location.href = "/userlogin"
-    }
+    window.location.href = "/"
     localStorage.clear()
 }
 const catchError = {

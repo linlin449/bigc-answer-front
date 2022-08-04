@@ -6,11 +6,6 @@ const routes = [
     name: "login",
     component: () => import("../views/Login.vue"),
   },
-  {
-    path: "/userLogin",
-    name: "userLogin",
-    component: () => import("../views/userLogin.vue"),
-  },
   // 学生界面
   {
     path: "/student",

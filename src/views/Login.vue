@@ -1,333 +1,196 @@
 <template>
-  <div class="body">
-    <div class="title">欢迎登录bigc物理答题系统!</div>
-    <div class="login">
-      <ul class="menu-tab">
-        <li v-for="v in MenuData" :class="{ current: v.current }" :key="v.type" @click="clickMenu(v)">
-          {{ v.txt }}
-        </li>
-      </ul>
-      <el-form ref="ruleFormRef" :model="ruleForm" status-icon :rules="rules" class="demo-ruleForm" size="large">
-        <el-form-item prop="username">
-          <el-input v-model="ruleForm.username" placeholder="学号" type="text" autocomplete="off" maxlength="9" />
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input v-model="ruleForm.password" type="password" placeholder="密码" autocomplete="off" minlength="6"
-            maxlength="15" />
-        </el-form-item>
-
-        <el-form-item prop="code" v-show="model === 'login'">
-          <el-input class="code" v-model="ruleForm.code" type="text" placeholder="验证码" autocomplete="off" maxlength="5"
-            minlength="5" />
-          <el-image class="login_code" :src="imgBase64" @click="refreshCode()" />
-        </el-form-item>
-
-        <el-form-item prop="repassword" v-show="model === 'register'">
-          <el-input v-model="ruleForm.repassword" type="password" placeholder="重复密码" minlength="6" maxlength="15" />
-        </el-form-item>
-        <el-form-item prop="name" v-show="model === 'register'">
-          <el-input v-model="ruleForm.name" type="text" placeholder="姓名" maxlength="5" />
-        </el-form-item>
-        <el-form-item prop="email" v-show="model === 'register'">
-          <el-input v-model="ruleForm.email" type="text" placeholder="邮箱找回密码使用" />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button :disabled="btnbool" type="primary" class="login-btn block" @click="submitForm(ruleFormRef)">{{
-              model === "login" ? "登录" : "注册"
-          }}</el-button>
-          <el-button type="primary" class="login-btn block" @click="resetForm(ruleFormRef)">重置</el-button>
-        </el-form-item>
-      </el-form>
+    <div class="main">
+        <div class="login-content">
+            <span class="loginHeader animate__animated animate__bounceIn">北京印刷学院物理答题系统</span>
+            <el-card class="box-card animate__animated animate__fadeInUp">
+                <template #header>
+                    <el-avatar :size="80" style="background-color: #06f;margin-left: 40%;">
+                        <el-icon :size="50">
+                            <UserFilled />
+                        </el-icon>
+                    </el-avatar>
+                </template>
+                <el-tabs v-model="loginRole" @tab-change="resetFrom">
+                    <el-tab-pane label="学生登陆" :name="1"></el-tab-pane>
+                    <el-tab-pane label="老师登陆" :name="2"></el-tab-pane>
+                    <el-tab-pane label="管理员登陆" :name="3"></el-tab-pane>
+                    <el-form :model="formData" ref="formRef" :rules="rules">
+                        <el-form-item prop="username">
+                            <el-input placeholder="用户名(学号)" v-model="formData.username" />
+                        </el-form-item>
+                        <el-form-item prop="password">
+                            <el-input type="password" show-password placeholder="密码" v-model="formData.password" />
+                        </el-form-item>
+                        <el-form-item prop="vercode">
+                            <el-row :gutter="20">
+                                <el-col :span="20">
+                                    <el-input placeholder="验证码" v-model="formData.vercode" />
+                                </el-col>
+                                <el-col :span="4">
+                                    <el-image v-loading="codeLoading" style="width: 130px; height: 48px"
+                                        :src="captchaBase64" @click="createCaptcha" />
+                                </el-col>
+                            </el-row>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button class="login-button" v-loading="loginLoading" color="#06f" auto-insert-space
+                                @click="handelLogin(formRef)">登陆
+                            </el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-tabs>
+            </el-card>
+        </div>
     </div>
-  </div>
 </template>
-
-<script lang="ts" setup>
-import { useCookies } from 'vue3-cookies'
-import { reactive, watch, onMounted } from "vue";
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import link from "../api/link.js";
-import url from "../api/url.js";
-import code from "../api/code.js";
-import * as check from "../util/verfifcation.js";
-import { ElMessage } from "element-plus";
-import { FormInstance } from "element-plus";
-import { useStore } from 'vuex';
+<script setup>
+import { ElMessage } from 'element-plus';
+import { UserFilled } from '@element-plus/icons-vue'
+import { onMounted, reactive, ref } from 'vue';
+import { studentLogin, teacherLogin, adminLogin, getCaptcha } from '../api/api'
+import code from '../api/code.js';
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router';
+import 'animate.css';
+const router = useRouter();
 const store = useStore();
-const { cookies } = useCookies()
-let router = useRouter(); //登陆成功后跳转到首页
-/*登录注册按钮数据及逻辑*/
-const MenuData = reactive([
-  { txt: "登录", current: true, type: "login" },
-  { txt: "注册", current: false, type: "register" },
-]);
-let model = ref("login"); //model 提供给后面逻辑处理
-let clickMenu = (item) => {
-  MenuData.forEach((element) => {
-    element.current = false;
-  });
-  item.current = true;
-  model.value = item.type;
-};
-/**/
 
-/* element表单部分*/
-const ruleFormRef = ref<FormInstance>();
-const ruleForm = reactive({
-  //表单部分
-  name: "",
-  username: "",
-  password: "",
-  code: "",
-  repassword: "",
-  email: "",
-});
+const loginRole = ref(1);
 
-/*校验规则*/
-const checkname = (rule, value, callback) => {
-  if (!value) {
-    callback(new Error("姓名不能为空"));
-  } else if (!check.checkUsername(value)) {
-    callback(new Error("请输入大于一位的中文名"));
-  } else {
-    callback();
-  }
-};
-const checkUsername = (rule, value, callback) => {
-  if (!value) {
-    callback(new Error("学号不能为空"));
-  } else if (!check.checkUsername(value)) {
-    callback(new Error("学号规则错误，9位数字，不能以0开头"));
-  } else {
-    callback();
-  }
-};
+const codeLoading = ref(true);
 
-const validatePassword = (rule, value, callback) => {
-  if (!value) {
-    callback(new Error("密码不能为空"));
-  } else if (!check.checkPassword(value)) {
-    callback("密码格式不正确，正确为6~16位，包含大小写字母和数字的组合");
-  } else {
-    callback();
-  }
-};
-const checkCode = (rule, value, callback) => {
-  if (!value) {
-    return callback(new Error("验证码不能为空"));
-  }
-  else {
-    callback();
-  }
-};
-const validatePass2 = (rule, value, callback) => {
-  //登陆时不用校验重复密码
-  if (model.value === "login") {
-    callback();
-  }
-  if (value === "") {
-    callback(new Error("重复密码不能为空"));
-  } else if (value !== ruleForm.password) {
-    callback(new Error("两次密码必须相同"));
-  } else {
-    callback();
-  }
-};
-const checkEmail = (rule, value, callback) => {
-  //登陆时不用校验重复密码
-  if (model.value === "login") {
-    callback();
-  }
-  if (value === "") {
-    callback(new Error("邮箱不能为空"));
-  } else if (check.checkEmail(value)) {
-    callback(new Error("邮箱格式不正确"));
-  } else {
-    callback();
-  }
-};
+const loginLoading = ref(false);
+
+const captchaBase64 = ref('');
+
+const formRef = ref();
 const rules = reactive({
+    username: [
+        { required: true, message: '请输入用户名', trigger: 'blur' },
+        { min: 5, max: 9, message: '请输入正确的用户名', trigger: 'blur' },
+    ],
+    password: [
+        { required: true, message: '请输入密码', trigger: 'blur' },
+        { min: 6, max: 16, message: '密码长度为6-16', trigger: 'blur' },
+    ],
+    vercode: [
+        { required: true, message: '请输入验证码', trigger: 'blur' },
+    ],
+})
+/**
+ * 提交数据
+ */
+const formData = reactive({
+    username: '',
+    password: '',
+    vercode: '',
+    verkey: '',
+})
 
-  password: [{ validator: validatePassword, trigger: "blur" }],
-  repassword: [{ validator: validatePass2, trigger: "blur" }],
-  username: [{ validator: checkUsername, trigger: "blur" }],
-  name: [{ validator: checkname, trigger: "blur" }],
-  code: [{ validator: checkCode, trigger: "blur" }],
-  email: [{ validator: checkEmail, trigger: "blur" }],
-});
-/**/
-/*检测校验是否通过，通过按钮变为可登录*/
-let btnbool = ref(true);
-watch(ruleForm, (newval, oldval) => {
-  if (model.value === "login") {
-    if (newval.username != "" && newval.password != "" && newval.code != "") {
-      btnbool.value = false;
-    } else {
-      btnbool.value = true;
+const resetFrom = () => {
+    for (let o in formData) {
+        formData[o] = '';
     }
-  } else {
-    if (
-      newval.username != "" &&
-      newval.password != "" &&
-      newval.repassword != ""
-      &&
-      newval.name != ""
-      &&
-      newval.email != ""
-    ) {
-      btnbool.value = false;
+}
+const createCaptcha = async () => {
+    const response = await getCaptcha();
+    if (response.data.code == code.NORMAL_SUCCESS) {
+        captchaBase64.value = response.data.data.image;
+        formData.verkey = response.data.data.key
     } else {
-      btnbool.value = true;
+        ElMessage.error(`验证码获取失败:${response.data.msg}`)
     }
-  }
-});
-/**/
-/*提交*/
-const submitForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.validate(async (valid) => {
-    // if (!valid) {
-    //   console.log("error submit!");
-    //   return false;
-    // }
-    if (model.value === "register") {
-      let data = {
-        username: ruleForm.username,
-        name: ruleForm.name,
-        password: ruleForm.password,
-        email: ruleForm.email,
-      };
-      let response = await link(url.register, "post", data);
-      if (response.data.code === code.NORMAL_SUCCESS) {
-        ElMessage({
-          message: "注册成功",
-          type: "success",
-        });
-        model.value = "login";
-        MenuData.forEach((element) => {
-          element.current = false;
-        });
-        MenuData[0].current = true;
-      } else {
-        ElMessage.error(response.data.msg);
-      }
-    } else {
-      let response = await link(
-        url.login.student,
-        "post",
-        {
-          username: ruleForm.username, password: ruleForm.password,
-          vercode: ruleForm.code, verkey: identifyCode.value
-        },
-      );
-      // store.getters.set
-      store.commit("setUsername", ruleForm.username);
-      if (response.data.code === code.NORMAL_SUCCESS) {
-        ElMessage({
-          message: response.data.msg,
-          type: "success",
-        });
-        store.commit("setRole", 1);
-        store.commit("setToken", response.data.data.token);
-        cookies.set("token", response.data.data.token, new Date(response.data.data.expire));
-        router.push({ name: "student" }); //增加cookies
-      } else {
-        //登陆失败
-        ElMessage.error(response.data.msg);
-        //刷新验证码
-        refreshCode();
-      }
-    }
-  });
-};
-/*重置*/
-const resetForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-};
-/**/
+    codeLoading.value = false;
+}
 
-// 图形验证码
-let identifyCode = ref("");
-let imgBase64 = ref("");
-const refreshCode = async () => {
-  let response = await link(url.getcaptcha);
-  imgBase64.value = response.data.data.image;
-  identifyCode.value = response.data.data.key;
-};
+const login = async () => {
+    loginLoading.value = true;
+    store.commit("setUsername", formData.username);
+    let response = '';
+    switch (loginRole.value) {
+        case 1:
+            store.commit("setRole", 1);
+            response = await studentLogin(formData.username, formData.password, formData.vercode, formData.verkey);
+            if (response.data.code == code.NORMAL_SUCCESS) {
+                store.commit("setToken", response.data.data.token);
+                router.push({ name: "student" });
+            } else {
+                ElMessage.error(`登陆失败失败:${response.data.msg}`)
+                createCaptcha();
+            }
+            break;
+        case 2:
+            store.commit("setRole", 2);
+            response = await teacherLogin(formData.username, formData.password, formData.vercode, formData.verkey);
+            if (response.data.code == code.NORMAL_SUCCESS) {
+                store.commit("setToken", response.data.data.token);
+                router.push({ name: "user" });
+            } else {
+                ElMessage.error(`登陆失败失败:${response.data.msg}`)
+                createCaptcha();
+            }
+            break;
+        case 3:
+            store.commit("setRole", 3);
+            response = await adminLogin(formData.username, formData.password, formData.vercode, formData.verkey);
+            if (response.data.code == code.NORMAL_SUCCESS) {
+                store.commit("setToken", response.data.data.token);
+                router.push({ name: "user" });
+            } else {
+                ElMessage.error(`登陆失败失败:${response.data.msg}`);
+                createCaptcha();
+            }
+            break;
+        default:
+            break;
+    }
+    loginLoading.value = false;
+}
+
+const handelLogin = async (formEl) => {
+    if (!formEl) return
+    await formEl.validate((valid) => {
+        if (valid) {
+            login();
+        }
+    })
+}
+
 onMounted(() => {
-  refreshCode()
-});
+    createCaptcha();
+})
 </script>
+<style scoped>
+.main {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-repeat: no-repeat;
+    background-image: url("../assets/background.jpg");
+}
 
-<style lang="scss" scoped>
-.body {
-  padding-top: 190px;
-  height: 100%;
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  overflow-y: auto;
-  background-image: url("../assets/background.jpg");
-  background-size: cover;
+.login-content {
+    margin: 0 auto;
+}
 
-  .title {
-    font-size: 40px;
-    color: rgb(13, 237, 69);
-    margin-bottom: 30px;
-  }
+.loginHeader {
+    display: block;
+    font-size: 32px;
+    letter-spacing: 31px;
+    color: white;
+    text-align: center;
+    margin-top: 200px;
+    font-weight: bold;
+}
 
-  .login {
-    background-color: rgba(169, 163, 163, 0.5);
-    box-shadow: 0 6px 12px 0 rgba(138, 153, 150, 0.15);
-    border-radius: 10px;
-    width: 450px;
-    margin: auto;
+.box-card {
+    margin: 30px auto;
+    width: 500px;
+}
 
-    .menu-tab {
-      padding: 0;
-      padding-top: 10px;
-      padding-bottom: 10px;
-
-      li {
-        cursor: pointer;
-        display: inline-block; //行内块
-        margin: auto;
-        width: 25%;
-        line-height: 50px;
-        font-size: 20px;
-        color: rgb(253, 253, 253);
-        border-radius: 8px;
-      }
-
-      .current {
-        background-color: rgba(14, 180, 231, 0.5);
-      }
-    }
-
-    .demo-ruleForm {
-      display: inline-block;
-      width: 65%;
-      margin: auto;
-
-      .block {
-        display: block;
-        width: 40%;
-        margin: auto;
-      }
-
-      .code {
-        width: 50%;
-        margin-top: 10px
-      }
-
-      .login_code {
-        margin-top: 10px;
-        margin-left: 10px;
-      }
-    }
-  }
+.login-button {
+    margin-left: 5%;
+    width: 90%;
 }
 </style>

@@ -398,7 +398,7 @@ const submitAnswer = async (data, qid) => {
     }
     const response = await link(url.question.answer, "post", ans);
     if (response.data.code == code.NORMAL_SUCCESS) {
-        getAnswerDetail(qid, questionId.data.typeId);
+        getAnswerDetail(qid, questionInfo.data.typeId);
         answerVisible.value = true;
     }
     else {

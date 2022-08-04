@@ -75,7 +75,6 @@ export const checkQuestionStatus = (questionId, username) => {
 /**
  * 获取题目的正确答案
  * @param {Number} questionId 
- * @returns 
  */
 export const getRightAnswerById = (questionId) => {
     return service.get(`/api/rightanswer/question/${questionId}`)
@@ -86,8 +85,47 @@ export const getRightAnswerById = (questionId) => {
  * @param {Number} questionId 问题ID
  * @param {String} username 学生username
  * @param {String} note 笔记文本
- * @returns 
  */
 export const updateQuestionNote = (questionId, username, note) => {
     return service.post(`/api/favorite/update/note/question/${questionId}/username/${username}`, { "note": note })
-}  
+}
+
+/**
+ * 学生登陆
+ * @param {String} username 用户名
+ * @param {String} password 密码
+ * @param {String} vercode 验证码
+ * @param {String} verkey 验证码key
+ */
+export const studentLogin = (username, password, vercode, verkey) => {
+    return service.post('/api/student/login', { username, password, vercode, verkey });
+}
+
+/**
+ * 老师登陆
+ * @param {String} username 用户名
+ * @param {String} password 密码
+ * @param {String} vercode 验证码
+ * @param {String} verkey 验证码key
+ */
+export const teacherLogin = (username, password, vercode, verkey) => {
+    return service.post('/api/teacher/login', { username, password, vercode, verkey });
+}
+
+/**
+ * 管理员登陆
+ * @param {String} username 用户名
+ * @param {String} password 密码
+ * @param {String} vercode 验证码
+ * @param {String} verkey 验证码key
+ */
+export const adminLogin = (username, password, vercode, verkey) => {
+    return service.post('/api/admin/login', { username, password, vercode, verkey });
+}
+
+/**
+ * 获取验证码
+ */
+export const getCaptcha = () => {
+    return service.get('/api/captcha/getcaptcha');
+}
