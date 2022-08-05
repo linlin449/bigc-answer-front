@@ -56,6 +56,8 @@
             <el-tag v-if="scope.row.type === '简答'" type="info" disable-transitions>{{ scope.row.type }}</el-tag>
           </template></el-table-column>
       </el-table>
+       <el-pagination v-model:currentPage="studentList.data.current" layout="prev, pager, next"
+        :total="studentList.data.total" @current-change="handleCurrentChange" />
     </div>
   </div>
 </template>
