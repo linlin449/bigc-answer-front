@@ -201,6 +201,10 @@ const router = useRouter();
 const store = useStore();
 const ErrorCode = code;
 
+const props = defineProps({
+    qid: Number,
+    cid: Number,
+})
 
 
 //课程和章节
@@ -301,7 +305,6 @@ const onSubmit = () => {
 };
 
 
-
 let sortLevel = (level) => {
   if (level == "困难") return 3;
   if (level == "简单") return 1;
@@ -320,6 +323,12 @@ let getQuestionAllInfo = async (questionId) => {
     ElMessage.error(response.data.msg);
     return;
   }
+  subjectId.value=response.data.data.subjectId
+  console.log(MenuData)
+  console.log(subjectId.value)
+  changeSubject(subjectId.value)
+  console.log(chapters)
+  chapterId.value=response.data.data.chapterId
   let arr = [];
   arr.push(response.data.data);
   let q = sortQuestion(arr)[0];
@@ -338,12 +347,15 @@ let getQuestionAllInfo = async (questionId) => {
     return;
   }
   if (q.type != "简答") {
-    text.A = responseOne.data.data.a;
-    text.B = responseOne.data.data.b;
-    text.C = responseOne.data.data.c;
-    text.D = responseOne.data.data.d;
-    text.E = responseOne.data.data.e;
-    text.F = responseOne.data.data.f;
+    text.A = responseOne.data.data.a==null?'':responseOne.data.data.a;
+    text.B = responseOne.data.data.b==null?'':responseOne.data.data.b;
+    text.C = responseOne.data.data.c==null?'':responseOne.data.data.c;
+    text.D = responseOne.data.data.d==null?'':responseOne.data.data.d;
+    text.E = responseOne.data.data.e==null?'':responseOne.data.data.e;
+    text.F = responseOne.data.data.f==null?'':responseOne.data.data.f;
+  }
+  else{
+    text.answer=responseOne.data.data.answer==null?'':responseOne.data.data.answer;
   }
   let responseTwo = await link(url.questionRightAnswer.getRight(questionId));
   if (responseTwo.data.code !== ErrorCode.NORMAL_SUCCESS) {
@@ -354,8 +366,7 @@ let getQuestionAllInfo = async (questionId) => {
     return;
   }
   checkList.value = responseTwo.data.data.rightAnswer.split('-');
-  text.analysis = responseTwo.data.data.analysis;
-
+  text.analysis = responseTwo.data.data.analysis==null?'':responseTwo.data.data.analysis;
 };
 
 let updateQuestionAllInfo = async (id) => {
@@ -439,13 +450,16 @@ let checkAnswer = (type) => {
   if (type === "单选") {
     if(checkList.value.length == 0){
       ElMessage.error("请选择题目的答案");
+      return false;
     }else if(checkList.value.length > 1){
       ElMessage.error("单选题应仅有一个正确答案");
+      return false;
     }
   }
   if (type === "多选") {
     if(checkList.value.length<2){
       ElMessage.error("多选题应至少有两个正确答案");
+      return false;
     }
   }
     return true;
@@ -460,9 +474,7 @@ let addQuestionAllInfo = async () => {
   question.chapterId = chapterId.value;
   question.subjectId = subjectId.value;
   for(let i = 0; i < checkList.value.length; i++){
-    console.log(i);
     text.answer = text.answer + checkList.value[i] + '-';
-    console.log(text.answer);
   }
   text.answer = text.answer.substring(0, text.answer.length - 1);
   if (!checkScore(question.score)||!checkAnswer(text.type)) {
