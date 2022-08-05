@@ -96,9 +96,6 @@ const handleCurrentChange = (currentPage) => {
 
 
 
-//然后点击具体错题可进入详细页面就和答题界面类似
-//可增加笔记，
-//错题详情信息挂在侧边栏就可以了。
 onMounted(() => {
   getCurrentPageWrongQuestion(1,currentUsername)
 })

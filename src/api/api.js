@@ -129,3 +129,10 @@ export const adminLogin = (username, password, vercode, verkey) => {
 export const getCaptcha = () => {
     return service.get('/api/captcha/getcaptcha');
 }
+/**
+ * 
+ * @returns 
+ */
+export const getQuestionPageByChapterId = (page,id) => {
+    return service.get(`/api/question/list/${page}/chapter/${id}`)
+}

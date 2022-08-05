@@ -25,7 +25,7 @@
     <div class="question-box">
       <el-table
         @row-click="clickRow"
-        :data="tableData.data"
+        :data="tableData.data.records"
         border
         style="width: 100%"
         :row-class-name="tableRowClassName"
@@ -130,8 +130,14 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination style="margin-top: 10px; margin-left:-5px ;" v-model:currentPage="tableData.data.current" layout="prev, pager, next"
+        :total="tableData.data.total" @current-change="handleCurrentChange" />
     </div>
   </div>
+    <el-dialog v-model="editQuestionVisible" width="70%" class="dialog"  destroy-on-close>
+      <h3 class="title">修改题目</h3>
+       <questionAdd  :add="false" :qid="currentqid"></questionAdd>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -141,14 +147,16 @@ import link from "../../../api/link.js";
 import url from "../../../api/url.js";
 import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
+import { getQuestionPageByChapterId } from '@/api/api'
 import { ElMessage,ElMessageBox } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { useStore } from 'vuex';
 import "md-editor-v3/lib/style.css";
+import questionAdd from './components/questionadd.vue';
 const ErrorCode = code;
 const store = useStore();
 const router = useRouter();
-let chapterId="";
+let currentChapterId="";
 /**
  * 课程和对应的章节数据
  */
@@ -168,37 +176,38 @@ let getChapter = async () => {
     return ElMessage.error(response.data.msg);
   }
   MenuData.data = response.data.data;
-  console.log(MenuData.data);
   MenuData.data.forEach((e) => {
     e.chapters.forEach((e1) => {
       e1.current = false;
     });
   });
   MenuData.data[0].chapters[0].current = true;
+  currentChapterId = MenuData.data[0].chapters[0].id
+   if(!store.state.currentChapterId){
+     store.commit('setcurrentChapter', currentChapterId)
+  }
 };
 let clickChapterMenu = (val) => {
-  if (val.current) return;
-  MenuData.data.forEach((element) => {
-    element.chapters.forEach((e) => {
-      e.current = false;
-    });
-  });
-  val.current = true;
-  store.commit("setchapterId",val.id)
-  getQuestionByChapterId(val.id); //根据chapterid查询question
+ currentChapterId = val.id;
+  store.commit('setcurrentChapter', currentChapterId)
+  getQuestionByChapterId(val.id,1); //根据chapterid查询question
 };
 /**
  * 问题的列表
  */
 const tableData = reactive({ data: [] });
 const questionMenuData = reactive({});
-let getQuestionByChapterId = async (id) => {
-  let response = await link(url.question.getQuestionByChapterId(id), "get");
+let getQuestionByChapterId = async (chapterId,currentPage) => {
+  let response = await getQuestionPageByChapterId(currentPage,chapterId);
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
     return ElMessage.error(response.data.msg);
   }
-  tableData.data = sortQuestion(response.data.data);
+  tableData.data=response.data.data;
+  tableData.data.records = sortQuestion(response.data.data.records);
 };
+const handleCurrentChange = (currentPage) => {
+  getQuestionByChapterId(store.state.chapterId,currentPage);
+}
 
 const form = reactive({
   name: '',
@@ -210,10 +219,11 @@ const form = reactive({
   resource: '',
   desc: '',
 })
+let editQuestionVisible =ref(false)
+let currentqid=ref()
 const handleEdit = (index, row) => {
-store.commit("setquestionId",row.id)
-store.commit("setIsAdd",false)
-router.push({ name: "questionAdminAdd" });
+  currentqid.value=row.id
+  editQuestionVisible.value=true
 };
 const handleDelete = async(index, row) => {
   ElMessageBox.confirm
@@ -238,9 +248,9 @@ const handleDelete = async(index, row) => {
 /**
  * 初始化
  */
-onMounted(() => {
-  getChapter();
-  getQuestionByChapterId(store.state.chapterId);
+onMounted(async() => {
+  await getChapter();
+  await getQuestionByChapterId(store.state.currentChapterId,1);
 });
 </script>
 
@@ -296,5 +306,15 @@ onMounted(() => {
   cursor: pointer;
   display: flex;
   align-items: center;
+}
+.dialog{
+  position: relative;
+
+}
+.title{
+  position: absolute;
+  font-size: 30px;
+  top: 10%;
+  left: 5%;
 }
 </style>

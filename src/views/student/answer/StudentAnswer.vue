@@ -17,7 +17,7 @@
       </template>
     </el-dropdown>
     <div class="question-box">
-      <el-table @row-click="clickRow" :data="tableData.data" border style="width: 100%"
+      <el-table @row-click="clickRow" :data="tableData.data.records" border style="width: 100%"
         :row-class-name="tableRowClassName">
         <el-table-column prop="title" label="问题" header-align="center" show-overflow-tooltip>
           <template #default="scope">
@@ -56,8 +56,8 @@
             <el-tag v-if="scope.row.type === '简答'" type="info" disable-transitions>{{ scope.row.type }}</el-tag>
           </template></el-table-column>
       </el-table>
-       <el-pagination v-model:currentPage="studentList.data.current" layout="prev, pager, next"
-        :total="studentList.data.total" @current-change="handleCurrentChange" />
+        <el-pagination style="margin-top: 10px; margin-left:-5px ;" v-model:currentPage="tableData.data.current" layout="prev, pager, next"
+        :total="tableData.data.total" @current-change="handleCurrentChange" />
     </div>
   </div>
 </template>
@@ -69,12 +69,14 @@ import link from "../../../api/link.js";
 import url from "../../../api/url.js";
 import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
+import { getQuestionPageByChapterId } from '@/api/api'
 import { ElMessage } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
-import store from "../../../store/index.js";
+import { useStore } from 'vuex';
 import "md-editor-v3/lib/style.css";
 const ErrorCode = code;
 const router = useRouter();
+const store = useStore();
 let currentChapterId = "";
 
 const filterTag = (value,row) => {
@@ -107,20 +109,25 @@ let getChapter = async () => {
 let clickChapterMenu = (val) => {
   currentChapterId = val.id;
   store.commit('setcurrentChapter', currentChapterId)
-  getQuestionByChapterId(val.id); //根据chapterid查询question
+    getQuestionByChapterId(val.id,1); //根据chapterid查询question
 };
 /**
  * 问题的列表
  */
 const tableData = reactive({ data: [] });
 const questionMenuData = reactive({});
-let getQuestionByChapterId = async (id) => {
-  let response = await link(url.question.getQuestionByChapterId(id), "get");
+let getQuestionByChapterId = async (chapterId,currentPage) => {
+  let response = await getQuestionPageByChapterId(currentPage,chapterId);
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
     return ElMessage.error(response.data.msg);
   }
-  tableData.data = sortQuestion(response.data.data);
+  tableData.data=response.data.data;
+  tableData.data.records = sortQuestion(response.data.data.records);
 };
+const handleCurrentChange = (currentPage) => {
+  getQuestionByChapterId(store.state.chapterId,currentPage);
+}
+
 //TODO 鼠标点击题目事件
 let clickRow = (row, column, event) => {
   router.push({
@@ -134,8 +141,7 @@ let clickRow = (row, column, event) => {
  */
 onMounted(async () => {
   await getChapter();
-  currentChapterId = store.state.currentChapterId
-  await getQuestionByChapterId(currentChapterId);
+  await getQuestionByChapterId(store.state.currentChapterId,1);
 });
 </script>
 
