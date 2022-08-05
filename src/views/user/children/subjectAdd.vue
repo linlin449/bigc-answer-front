@@ -131,25 +131,45 @@ let updateTableChapter = () => {
 }
 // 删除章节和课程
 let subjectDelete = async (index, row) => {
-  let response = await link(url.subject.delete(row.subjectId), "post")
-  if (response.data.code !== ErrorCode.NORMAL_SUCCESS) {
-    ElMessage.error(response.data.msg);
-    return;
-  } else {
-    ElMessage.success("删除成功！");
-    await getChapter()
-  }
+  ElMessageBox.confirm
+    (
+      '确定要删除该课程?', '警告',
+      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
+    ).then( async () => {
+      //确认
+      let response = await link(url.subject.delete(row.subjectId), "post")
+      if (response.data.code !== ErrorCode.NORMAL_SUCCESS) {
+        ElMessage.error(response.data.msg);
+        return;
+      } else {
+        ElMessage.success("删除成功！");
+        await getChapter()
+      }
+    })
+    .catch(() => {
+      //取消
+    })
 }
 let chapterDelete = async (index, row) => {
-  let response = await link(url.chapter.delete(row.id), "get")
-  if (response.data.code !== ErrorCode.NORMAL_SUCCESS) {
-    ElMessage.error(response.data.msg);
-    return;
-  } else {
-    ElMessage.success("删除成功！");
-    await getChapter()
-    updateTableChapter()
-  }
+  ElMessageBox.confirm
+    (
+      '确定要删除该章节?', '警告',
+      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
+    ).then( async () => {
+      //确认
+      let response = await link(url.chapter.delete(row.id), "get")
+      if (response.data.code !== ErrorCode.NORMAL_SUCCESS) {
+        ElMessage.error(response.data.msg);
+        return;
+      } else {
+        ElMessage.success("删除成功！");
+        await getChapter()
+        updateTableChapter()
+      }
+    })
+    .catch(() => {
+      //取消
+    })
 }
 
 // 查看所有章节内容

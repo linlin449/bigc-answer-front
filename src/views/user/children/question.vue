@@ -141,7 +141,7 @@ import link from "../../../api/link.js";
 import url from "../../../api/url.js";
 import code from "../../../api/code.js";
 import sortQuestion from "../../../util/sortQuestion.js";
-import { ElMessage } from "element-plus";
+import { ElMessage,ElMessageBox } from "element-plus";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { useStore } from 'vuex';
 import "md-editor-v3/lib/style.css";
@@ -216,14 +216,24 @@ store.commit("setIsAdd",false)
 router.push({ name: "questionAdminAdd" });
 };
 const handleDelete = async(index, row) => {
-  console.log(index, row);
-  let response=await link(url.question.deleteQuestionAllInfo(row.id), "get")
-  if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
-    return ElMessage.error(response.data.msg);
-  }else{
-    ElMessage.success("删除成功！");
-  }
-  getQuestionByChapterId(store.state.chapterId);
+  ElMessageBox.confirm
+    (
+      '确定要删除该道题目?', '警告',
+      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
+    ).then( async () => {
+      //确认
+      console.log(index, row);
+      let response = await link(url.question.deleteQuestionAllInfo(row.id), "get")
+      if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
+        return ElMessage.error(response.data.msg);
+      }else{
+        ElMessage.success("删除成功！");
+      }
+      getQuestionByChapterId(store.state.chapterId);
+    })
+    .catch(() => {
+      //取消
+    })
 };
 /**
  * 初始化
