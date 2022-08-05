@@ -22,7 +22,7 @@
         <el-input v-model="text.describe" />
       </el-form-item>
       <el-form-item label="成绩">
-        <el-input placeholder="请输入0-20的数字" v-model="text.score" />
+        <el-input-number v-model="text.score" :max="20" :min="0" :step="2" />
       </el-form-item>
       <el-row>
         <el-col :span="12">
@@ -134,7 +134,15 @@
       </template>
       <template v-if="text.type != '简答'">
         <el-form-item label="答案" width="450px">
-          <el-input placeholder="请输入选择题答案大写字母" v-model="text.answer" />
+          <!-- <el-input placeholder="请输入选择题答案大写字母" v-model="text.answer" /> -->
+          <el-checkbox-group v-model="checkList" :min="0" :max="text.type=='单选' ? 1 : 6">
+            <el-checkbox label="A"/>
+            <el-checkbox label="B" v-show="text.B != ''"/>
+            <el-checkbox label="C" v-show="text.C != ''"/>
+            <el-checkbox label="D" v-show="text.D != ''"/>
+            <el-checkbox label="E" v-show="text.E != ''"/>
+            <el-checkbox label="F" v-show="text.F != ''"/>
+          </el-checkbox-group>
         </el-form-item>
       </template>
       <template v-else>
@@ -221,10 +229,11 @@ let getChapter = async () => {
   MenuData.value.data = response.data.data;
 };
 
+const checkList = ref([])
 
 const dialogVisible = ref(false);//编辑框是否出现
 //text和form绑定
-const text = ref({
+const text = reactive({
   questionId: "",
   question: "",
   describe: "",
@@ -254,7 +263,7 @@ let buttonClick = (name) => {
 };
 //编辑框打开时
 let open = () => {
-  editInfo.value = text.value[item.value];
+  editInfo.value = text[item.value];
 };
 //编辑时将编辑框中的内容转变为
 let editHtmlInfo = "";
@@ -263,7 +272,7 @@ let saveHtml = (html) => {
 };
 //每次编辑保存时
 let saveInfo = () => {
-  text.value[item.value] = editHtmlInfo;
+  text[item.value] = editHtmlInfo;
   dialogVisible.value = false;
 };
 
@@ -314,12 +323,12 @@ let getQuestionAllInfo = async (questionId) => {
   let arr = [];
   arr.push(response.data.data);
   let q = sortQuestion(arr)[0];
-  text.value.questionId = q.id;
-  text.value.question = q.title;
-  text.value.describe = q.describe;
-  text.value.score = q.score;
-  text.value.level = q.level;
-  text.value.type = q.type;
+  text.questionId = q.id;
+  text.question = q.title;
+  text.describe = q.describe;
+  text.score = q.score;
+  text.level = q.level;
+  text.type = q.type;
   let responseOne = await link(url.questionOption.get(questionId));
   if (responseOne.data.code !== ErrorCode.NORMAL_SUCCESS) {
     if (responseOne.data.data == null) {
@@ -329,12 +338,12 @@ let getQuestionAllInfo = async (questionId) => {
     return;
   }
   if (q.type != "简答") {
-    text.value.A = responseOne.data.data.a;
-    text.value.B = responseOne.data.data.b;
-    text.value.C = responseOne.data.data.c;
-    text.value.D = responseOne.data.data.d;
-    text.value.E = responseOne.data.data.e;
-    text.value.F = responseOne.data.data.f;
+    text.A = responseOne.data.data.a;
+    text.B = responseOne.data.data.b;
+    text.C = responseOne.data.data.c;
+    text.D = responseOne.data.data.d;
+    text.E = responseOne.data.data.e;
+    text.F = responseOne.data.data.f;
   }
   let responseTwo = await link(url.questionRightAnswer.getRight(questionId));
   if (responseTwo.data.code !== ErrorCode.NORMAL_SUCCESS) {
@@ -344,19 +353,19 @@ let getQuestionAllInfo = async (questionId) => {
     ElMessage.error(response.data.msg);
     return;
   }
-  text.value.answer = responseTwo.data.data.rightAnswer;
-  text.value.analysis = responseTwo.data.data.analysis;
+  checkList.value = responseTwo.data.data.rightAnswer.split('-');
+  text.analysis = responseTwo.data.data.analysis;
 
 };
 
 let updateQuestionAllInfo = async (id) => {
   let question = {};
   question.id = id;
-  question.question = text.value.question;
-  question.describe = text.value.describe;
-  question.score = text.value.score;
-  question.levelId = sortLevel(text.value.level);
-  question.typeId = sortType(text.value.type);
+  question.question = text.question;
+  question.describe = text.describe;
+  question.score = text.score;
+  question.levelId = sortLevel(text.level);
+  question.typeId = sortType(text.type);
   question.chapterId = chapterId.value;
   question.subjectId = subjectId.value;
   if (!checkScore(question.score)) {
@@ -369,16 +378,16 @@ let updateQuestionAllInfo = async (id) => {
   } else {
     ElMessage.success("更新成功！");
   }
-  if (text.value.type != "简答") {
+  if (text.type != "简答") {
     let questionOption = {};
     questionOption.id = "";
     questionOption.questionId = id;
-    questionOption.a = text.value.A;
-    questionOption.b = text.value.B;
-    questionOption.c = text.value.C;
-    questionOption.d = text.value.D;
-    questionOption.e = text.value.E;
-    questionOption.f = text.value.F;
+    questionOption.a = text.A;
+    questionOption.b = text.B;
+    questionOption.c = text.C;
+    questionOption.d = text.D;
+    questionOption.e = text.E;
+    questionOption.f = text.F;
     let responseTwo = await link(
       url.questionOption.update,
       "put",
@@ -399,8 +408,8 @@ let updateQuestionAllInfo = async (id) => {
   let questionRightAnswer = {};
   questionRightAnswer.id = "";
   questionRightAnswer.questionId = id;
-  questionRightAnswer.rightAnswer = text.value.answer;
-  questionRightAnswer.analysis = text.value.analysis;
+  questionRightAnswer.rightAnswer = text.answer;
+  questionRightAnswer.analysis = text.analysis;
   let responseThree = await link(
     url.questionRightAnswer.update,
     "put",
@@ -420,40 +429,43 @@ let updateQuestionAllInfo = async (id) => {
 };
 
 let checkScore = (score) => {
-  let reg=/^[0-20]$/
-  if (!reg.test(score)) {
+  if (score <0 || score >20) {
     ElMessage.error("单个题目，成绩不能大于20");
     return false;
   }
   return true;
 };
-let checkAnswer = (type, answer) => {
+let checkAnswer = (type) => {
   if (type === "单选") {
-    let arr = ['A', 'B', 'C', 'D']
-    if (!arr.includes(answer)) {
-      ElMessage.error("单选的答案是A-D任意一个");
-      return false;
+    if(checkList.value.length == 0){
+      ElMessage.error("请选择题目的答案");
+    }else if(checkList.value.length > 1){
+      ElMessage.error("单选题应仅有一个正确答案");
     }
   }
   if (type === "多选") {
-    let reg=/^[A-E]{2,6}$/
-    if (!reg.test(answer)) {
-      ElMessage.error("多选的答案是A-E至少两个");
-      return false;
+    if(checkList.value.length<2){
+      ElMessage.error("多选题应至少有两个正确答案");
     }
   }
     return true;
 }
 let addQuestionAllInfo = async () => {
   let question = {};
-  question.question = text.value.question;
-  question.describe = text.value.describe;
-  question.score = text.value.score;
-  question.levelId = sortLevel(text.value.level);
-  question.typeId = sortType(text.value.type);
+  question.question = text.question;
+  question.describe = text.describe;
+  question.score = text.score;
+  question.levelId = sortLevel(text.level);
+  question.typeId = sortType(text.type);
   question.chapterId = chapterId.value;
   question.subjectId = subjectId.value;
-  if (!checkScore(question.score)||!checkAnswer(text.value.type,text.value.answer)) {
+  for(let i = 0; i < checkList.value.length; i++){
+    console.log(i);
+    text.answer = text.answer + checkList.value[i] + '-';
+    console.log(text.answer);
+  }
+  text.answer = text.answer.substring(0, text.answer.length - 1);
+  if (!checkScore(question.score)||!checkAnswer(text.type)) {
     return;
   }
 
@@ -464,15 +476,18 @@ let addQuestionAllInfo = async () => {
   } else {
     ElMessage.success("添加成功！");
   }
-  if (text.value.type != "简答") {
+  if (text.type != "简答") {
     let questionOption = {};
     questionOption.questionId = responseOne.data.data;
-    questionOption.a = text.value.A;
-    questionOption.b = text.value.B;
-    questionOption.c = text.value.C;
-    questionOption.d = text.value.D;
-    questionOption.e = text.value.E;
-    questionOption.f = text.value.F;
+    questionOption.a = text.A;
+    questionOption.b = text.B;
+    questionOption.c = text.C;
+    questionOption.d = text.D;
+    questionOption.e = text.E;
+    questionOption.f = text.F;
+    for(let o in questionOption){
+      if(questionOption[o]=='')questionOption[o] = null;
+    }
     let responseTwo = await link(
       url.questionOption.add,
       "post",
@@ -486,15 +501,15 @@ let addQuestionAllInfo = async () => {
 
   let questionRightAnswer = {};
   questionRightAnswer.questionId = responseOne.data.data;
-  questionRightAnswer.rightAnswer = text.value.answer;
-  questionRightAnswer.analysis = text.value.analysis;
+  questionRightAnswer.rightAnswer = text.answer;
+  questionRightAnswer.analysis = text.analysis;
   let responseThree = await link(
     url.questionRightAnswer.add,
     "post",
     questionRightAnswer
   );
-  text.value = {};
-  text.value = {
+  text = {};
+  text = {
     questionId: "",
     question: "",
     describe: "",

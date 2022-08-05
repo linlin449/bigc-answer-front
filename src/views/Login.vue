@@ -88,9 +88,9 @@ const formData = reactive({
 })
 
 const resetFrom = () => {
-    for (let o in formData) {
-        formData[o] = '';
-    }
+    formData.username = '';
+    formData.password = '';
+    formData.vercode = '';
 }
 const createCaptcha = async () => {
     const response = await getCaptcha();
