@@ -8,13 +8,12 @@
           <li @click="handelSelect('answerStudent')">答题</li>
           <li @click="handelSelect('analysisStudent')">错题</li>
           <li @click="handelSelect('favoriteStudent')">收藏</li>
-          <li
-            class="right"
-            @mouseenter="flag = !flag"
-            @mouseleave="flag = !flag"
-          >
+          <li class="right" @mouseenter="flag = !flag" @mouseleave="flag = !flag">
             <svg-icon class-name="size-icon" icon="user" />
             <span>{{ studentInfo.data.name }}</span>
+            <div class="msg" v-if="flag">
+              <p @click="changePass()">修改密码</p>
+            </div>
           </li>
         </ul>
       </el-col>
@@ -24,6 +23,7 @@
       <router-view></router-view>
     </div>
   </div>
+   <ChangePass :dialogTableVisible="showChange"  @before-close="showChange = false"></ChangePass>
 </template>
 
 <script setup>
@@ -33,10 +33,15 @@ import { useStore } from "vuex";
 import code from "../../api/code";
 import link from "../../api/link";
 import url from "../../api/url";
+import ChangePass from '@/components/UserInfo.vue'
 
 const ErrorCode = code;
 const store = useStore();
 const router = useRouter();
+let showChange=ref(false)
+const changePass=()=>{
+  showChange.value=true
+}
 let flag = ref(false);
 let handelSelect = (index) => {
   router.push({ name: index });
@@ -49,17 +54,18 @@ const getStudentInfo = async () => {
     studentInfo.data = response.data.data.student;
   }
 };
-onMounted(async() => {
+onMounted(async () => {
   await getStudentInfo();
   handelSelect('answerStudent')
 });
 </script>
 
 <style lang="scss" scoped>
-#student{
+#student {
   height: 100%;
-  background-color: rgb(207, 202, 202,0.7);
+  background-color: rgb(207, 202, 202, 0.7);
 }
+
 .right {
   margin-right: 6px;
 }

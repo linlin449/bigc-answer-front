@@ -232,7 +232,6 @@ const handleDelete = async(index, row) => {
       { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning', }
     ).then( async () => {
       //确认
-      console.log(index, row);
       let response = await link(url.question.deleteQuestionAllInfo(row.id), "get")
       if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
         return ElMessage.error(response.data.msg);

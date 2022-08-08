@@ -136,3 +136,7 @@ export const getCaptcha = () => {
 export const getQuestionPageByChapterId = (page,id) => {
     return service.get(`/api/question/list/${page}/chapter/${id}`)
 }
+
+export const changePassword=(user,newPass,oldPass,repeatPass)=>{
+    return service.post(`/api/${user}/password`,{newPass,oldPass,repeatPass})
+}

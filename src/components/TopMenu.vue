@@ -10,14 +10,14 @@
             <svg-icon class-name="size-icon" icon="user" />
             <span>{{ userInfo.data.name }}</span>
             <div class="msg" v-if="flag">
-              <p @click="manage()">个人信息</p>
-              <p class="exit" @click="exit()">退出</p>
+              <p @click="changePass()">修改密码</p>
             </div>
           </li>
         </ul>
       </el-col>
     </el-row>
   </div>
+  <ChangePass :dialogTableVisible="showChange"  @before-close="showChange = false"></ChangePass>
 </template>
 
 <script setup>
@@ -27,6 +27,7 @@ import { useStore } from "vuex";
 import code from "../api/code";
 import link from "../api/link";
 import url from "../api/url";
+import ChangePass from '@/components/UserInfo.vue'
 
 const ErrorCode = code;
 const store = useStore();
@@ -35,9 +36,11 @@ let flag = ref(false);
 let handelSelect = (index) => {
   router.push({ name: index });
 };
-let manage = () => { };
-let exit = () => { };
+let showChange=ref(false)
 
+const changePass=()=>{
+  showChange.value=true
+}
 const userInfo = reactive({ data: {} })
 const getUserInfo = async () => {
   let path = '';
