@@ -5,7 +5,7 @@
     <el-button text @click="saveInfo">保存</el-button>
     <el-button text @click="dialogVisible = false">退出</el-button>
   </el-dialog>
-  <el-card class="box-card">
+  
     <el-form label-width="120px">
       <el-form-item label="题干" >
         <el-row>
@@ -175,32 +175,29 @@
         <el-button @click="unSave" v-show="props.add">取消</el-button>
       </el-form-item>
     </el-form>
-  </el-card>
+  
 </template>
 <script setup>
 import {
   reactive,
-  watch,
-  shallowRef,
-  onBeforeUnmount,
   ref,
   onMounted,
-  onUnmounted,
 } from "vue";
 import MdEditor from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
-import { useRouter } from "vue-router";
 import link from "@/api/link.js";
 import url from "@/api/url.js";
 import code from "@/api/code.js";
 import { ElMessage } from "element-plus";
-import { ArrowDown } from "@element-plus/icons-vue";
-import { useStore } from "vuex";
 import sortQuestion from "@/util/sortQuestion.js";
-import { processSlotOutlet } from "@vue/compiler-core";
-const router = useRouter();
-const store = useStore();
+
 const ErrorCode = code;
+
+MdEditor.config({
+  editorConfig: {
+    renderDelay: 0
+  }
+});
 
 const props = defineProps({
     add: Boolean,
@@ -545,10 +542,7 @@ onMounted(async() => {
 
 </script>
 <style scoped>
-.box-card {
-  width: 710px;
-  margin-left: 25%;
-}
+
 
 .editor {
   border: 1px solid rgb(217, 216, 216);

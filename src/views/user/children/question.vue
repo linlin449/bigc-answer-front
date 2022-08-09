@@ -134,8 +134,7 @@
         :total="tableData.data.total" @current-change="handleCurrentChange" />
     </div>
   </div>
-    <el-dialog v-model="editQuestionVisible" width="70%" class="dialog"  destroy-on-close>
-      <h3 class="title">修改题目</h3>
+    <el-dialog center v-model="editQuestionVisible" width="750px"  destroy-on-close>
        <questionAdd  :add="false" :qid="currentqid"></questionAdd>
     </el-dialog>
 </template>
@@ -306,10 +305,8 @@ onMounted(async() => {
   display: flex;
   align-items: center;
 }
-.dialog{
-  position: relative;
 
-}
+
 .title{
   position: absolute;
   font-size: 30px;
