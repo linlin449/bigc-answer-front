@@ -163,9 +163,6 @@ const updateNote = async () => {
   }
 }
 
-
-
-
 onMounted(() => {
   getFavoriteQuestion(1);
 })
@@ -173,8 +170,8 @@ onMounted(() => {
 
 <style scoped>
 .box-card {
+  width: 980px;
+  margin: 0 auto;
   margin-top: 20px;
-  width: 90%;
-  margin-left: 5%;
 }
 </style>

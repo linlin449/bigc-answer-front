@@ -1,5 +1,5 @@
 <template>
-  <div id="Answer">
+   <el-card class="box-card">
     <el-dropdown v-for="v in MenuData.data" class="subject-box" :key="v.subject_id" size="large">
       <el-button type="primary">
         <span class="el-dropdown-link">
@@ -56,10 +56,10 @@
             <el-tag v-if="scope.row.type === '简答'" type="info" disable-transitions>{{ scope.row.type }}</el-tag>
           </template></el-table-column>
       </el-table>
-        <el-pagination style="margin-top: 10px; margin-left:-5px ;" v-model:currentPage="tableData.data.current" layout="prev, pager, next"
+        <el-pagination background style="margin-top: 10px; margin-left:-5px ;" v-model:currentPage="tableData.data.current" layout="prev, pager, next"
         :total="tableData.data.total" @current-change="handleCurrentChange" />
     </div>
-  </div>
+   </el-card>
 </template>
 
 <script setup>
@@ -146,18 +146,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-#Answer {
+.box-card {
   width: 980px;
   margin: 0 auto;
+  margin-top: 20px;
 }
 
-#Answer .subject-box {
+.box-card .subject-box {
   margin: 20px;
+  margin-top: 10px;
   margin-left: 0px;
   cursor: pointer;
 }
 
-#Answer .subject-box .title {
+.box-card .subject-box .title {
   cursor: pointer;
   margin-top: 10px;
   margin-left: 10px;
@@ -170,15 +172,15 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
-#Answer .subject-box .chapter-menu {
+.box-card .subject-box .chapter-menu {
   padding: 0;
 }
 
-#Answer .subject-box .chapter-menu {
+.box-card .subject-box .chapter-menu {
   padding: 0;
 }
 
-#Answer .subject-box .chapter-menu li {
+.box-card .subject-box .chapter-menu li {
   text-align: center;
   cursor: pointer;
   display: inline-block;
@@ -190,12 +192,12 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
-#Answer .subject-box .chapter-menu li:hover {
+.box-card .subject-box .chapter-menu li:hover {
   background-color: #9ed1f7;
   transition: all 1.5s ease;
 }
 
-#Answer .subject-box .chapter-menu .current {
+.box-card .subject-box .chapter-menu .current {
   background-color: #9ed1f7;
 }
 </style>

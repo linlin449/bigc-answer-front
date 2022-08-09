@@ -1,6 +1,5 @@
 <template>
-
-    <div class="question-box">
+    <el-card class="box-card">
          <el-button type="primary" @click="TotalInfo" style="margin-bottom: 10px;">总体情况</el-button>
         <el-table @row-click="clickRow" :data="wrongQuestionPage.data.records" border style="width: 100%"
             :row-class-name="tableRowClassName">
@@ -37,9 +36,9 @@
                     <el-tag v-if="scope.row.type === '简答'" type="info" disable-transitions>{{ scope.row.type }}</el-tag>
                 </template></el-table-column>
         </el-table>
-         <el-pagination style="margin-top: 10px; margin-left:-5px ;" v-model:currentPage="wrongQuestionPage.data.current" layout="prev, pager, next"
+         <el-pagination background style="margin-top: 10px; margin-left:-5px ;" v-model:currentPage="wrongQuestionPage.data.current" layout="prev, pager, next"
         :total="wrongQuestionPage.data.total" @current-change="handleCurrentChange" />
-    </div>
+    </el-card>
     <StudentAnalysVue :dialogTableVisible="analysShow" :username="store.state.username" @before-close="analysShow = false" />
      <QuestionDetail :qid="questionId" v-model:dialogTableVisible="dialogTableVisible"
       @before-close="dialogTableVisible = false; isEdit = false">
@@ -103,9 +102,9 @@ onMounted(() => {
 
 
 <style scoped>
-.question-box{
-    width: 980px;
-    margin: 0 auto;
-    margin-top: 20px;
+.box-card {
+  width: 980px;
+  margin: 0 auto;
+  margin-top: 20px;
 }
 </style>
