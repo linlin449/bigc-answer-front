@@ -234,7 +234,7 @@ const checkList = ref([])
 
 const dialogVisible = ref(false);//编辑框是否出现
 //text和form绑定
-const text = reactive({
+let text = reactive({
   questionId: "",
   question: "",
   describe: "",
