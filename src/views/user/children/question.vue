@@ -29,6 +29,7 @@
         border
         style="width: 100%"
         :row-class-name="tableRowClassName"
+        v-loading="loading"
       >
         <el-table-column
           label="问题"
@@ -154,6 +155,7 @@ import questionAdd from './components/questionadd.vue';
 const ErrorCode = code;
 const store = useStore();
 let currentChapterId="";
+const loading = ref(true)
 /**
  * 课程和对应的章节数据
  */
@@ -201,6 +203,7 @@ let getQuestionByChapterId = async (chapterId,currentPage) => {
   }
   tableData.data=response.data.data;
   tableData.data.records = sortQuestion(response.data.data.records);
+  loading.value=false
 };
 const handleCurrentChange = (currentPage) => {
   getQuestionByChapterId(store.state.currentChapterId,currentPage);
