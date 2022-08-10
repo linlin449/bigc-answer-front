@@ -54,7 +54,6 @@ import link from "@/api/link.js";
 import url from "@/api/url.js";
 import code from "@/api/code.js";
 import sortQuestion from "@/util/sortQuestion.js";
-import * as check from "@/util/verfifcation.js";
 import { ElMessage } from "element-plus";
 import { useStore } from 'vuex';
 import StudentAnalysVue from '@/components/StudentAnalys.vue';

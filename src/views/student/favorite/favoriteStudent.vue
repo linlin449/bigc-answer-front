@@ -22,7 +22,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination background layout="prev, pager, next" :total="favotireQuestion.total"
+    <el-pagination background layout="prev, pager, next" style="margin-top: 10px; margin-left:-5px ;" :total="favotireQuestion.total"
       v-model:currentPage="favotireQuestion.current" :page-size="favotireQuestion.size" />
     <QuestionDetail :qid="questionId" v-model:dialogTableVisible="dialogTableVisible"
       @before-close="dialogTableVisible = false; isEdit = false">
