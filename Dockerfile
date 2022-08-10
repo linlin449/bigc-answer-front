@@ -9,5 +9,7 @@ RUN echo "node" `node -v` \
     && npm run build
 
 FROM nginx:latest
-COPY --from=builder-web /build/web/dist /user/share/nginx/html
+WORKDIR /usr/share/nginx/html
+RUN rm -rf ./*
+COPY --from=builder-web /build/web/dist .
 COPY nginx.conf /etc/nginx/conf.d/default.conf
