@@ -140,8 +140,7 @@
 </template>
 
 <script setup>
-import { reactive, watch, ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { reactive,ref, onMounted } from "vue";
 import link from "../../../api/link.js";
 import url from "../../../api/url.js";
 import code from "../../../api/code.js";
@@ -154,7 +153,6 @@ import "md-editor-v3/lib/style.css";
 import questionAdd from './components/questionadd.vue';
 const ErrorCode = code;
 const store = useStore();
-const router = useRouter();
 let currentChapterId="";
 /**
  * 课程和对应的章节数据
@@ -205,7 +203,7 @@ let getQuestionByChapterId = async (chapterId,currentPage) => {
   tableData.data.records = sortQuestion(response.data.data.records);
 };
 const handleCurrentChange = (currentPage) => {
-  getQuestionByChapterId(store.state.chapterId,currentPage);
+  getQuestionByChapterId(store.state.currentChapterId,currentPage);
 }
 
 const form = reactive({
@@ -237,7 +235,7 @@ const handleDelete = async(index, row) => {
       }else{
         ElMessage.success("删除成功！");
       }
-      getQuestionByChapterId(store.state.chapterId);
+      getQuestionByChapterId(store.state.currentChapterId,tableData.data.current);
     })
     .catch(() => {
       //取消

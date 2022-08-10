@@ -512,25 +512,19 @@ let addQuestionAllInfo = async () => {
     "post",
     questionRightAnswer
   );
-  text = {};
-  text = {
-    questionId: "",
-    question: "",
-    describe: "",
-    score: "",
-    level: "简单",
-    type: "单选",
-    chapterId: "",
-    subjectId: "",
-    A: "",
-    B: "",
-    C: "",
-    D: "",
-    E: "",
-    F: "",
-    answer: "",
-    analysis: "",
-  };
+  text.A=''
+  text.B=''
+  text.C=''
+  text.D=''
+  text.E=''
+  text.F=''
+  text.analysis=''
+  text.answer=''
+  text.describe=''
+  text.level='简单'
+  text.type='单选'
+  text.score=0
+  text.question=''
 };
 
 onMounted(async() => {

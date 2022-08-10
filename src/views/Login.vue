@@ -1,6 +1,6 @@
 <template>
 
-    <div class="main">
+<div class="main">
         <div class="login-content">
             <span class="loginHeader animate__animated animate__bounceIn">北京印刷学院物理答题系统</span>
             <el-card class="box-card animate__animated animate__fadeInUp">

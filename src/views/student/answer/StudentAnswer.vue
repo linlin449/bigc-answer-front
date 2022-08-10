@@ -1,5 +1,5 @@
 <template>
-   <el-card class="box-card">
+  <el-card class="box-card">
     <el-dropdown v-for="v in MenuData.data" class="subject-box" :key="v.subject_id" size="large">
       <el-button type="primary">
         <span class="el-dropdown-link">
@@ -32,15 +32,11 @@
             }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="level" label="难度" width="80" align="center" 
-        :filters="[
+        <el-table-column prop="level" label="难度" width="80" align="center" :filters="[
           { text: '困难', value: '困难' },
           { text: '简单', value: '简单' },
           { text: '中等', value: '中等' },
-        ]" 
-        :filter-method="filterTag" 
-        filter-placement="bottom-end" 
-        header-align="center">
+        ]" :filter-method="filterTag" filter-placement="bottom-end" header-align="center">
           <template #default="scope">
             <el-tag v-if="scope.row.level === '困难'" type="danger" disable-transitions>{{ scope.row.level }}</el-tag>
             <el-tag v-if="scope.row.level === '简单'" type="success" disable-transitions>{{ scope.row.level }}</el-tag>
@@ -56,10 +52,11 @@
             <el-tag v-if="scope.row.type === '简答'" type="info" disable-transitions>{{ scope.row.type }}</el-tag>
           </template></el-table-column>
       </el-table>
-        <el-pagination background style="margin-top: 10px; margin-left:-5px ;" v-model:currentPage="tableData.data.current" layout="prev, pager, next"
-        :total="tableData.data.total" @current-change="handleCurrentChange" />
+      <el-pagination background style="margin-top: 10px; margin-left:-5px ;"
+        v-model:currentPage="tableData.data.current" layout="prev, pager, next" :total="tableData.data.total"
+        @current-change="handleCurrentChange" />
     </div>
-   </el-card>
+  </el-card>
 </template>
 
 <script setup>
@@ -79,7 +76,7 @@ const router = useRouter();
 const store = useStore();
 let currentChapterId = "";
 
-const filterTag = (value,row) => {
+const filterTag = (value, row) => {
   return row.level === value
 }
 
@@ -102,30 +99,31 @@ let getChapter = async () => {
   }
   MenuData.data = response.data.data;
   currentChapterId = MenuData.data[0].chapters[0].id
-  if(!store.state.currentChapterId){
-     store.commit('setcurrentChapter', currentChapterId)
+  if (!store.state.currentChapterId) {
+    store.commit('setcurrentChapter', currentChapterId)
   }
 };
 let clickChapterMenu = (val) => {
   currentChapterId = val.id;
   store.commit('setcurrentChapter', currentChapterId)
-    getQuestionByChapterId(val.id,1); //根据chapterid查询question
+  getQuestionByChapterId(val.id, 1); //根据chapterid查询question
 };
 /**
  * 问题的列表
  */
 const tableData = reactive({ data: [] });
 const questionMenuData = reactive({});
-let getQuestionByChapterId = async (chapterId,currentPage) => {
-  let response = await getQuestionPageByChapterId(currentPage,chapterId);
+let getQuestionByChapterId = async (chapterId, currentPage) => {
+  let response = await getQuestionPageByChapterId(currentPage, chapterId);
   if (response.data.code != ErrorCode.NORMAL_SUCCESS) {
     return ElMessage.error(response.data.msg);
+  } else {
+    tableData.data = response.data.data;
+    tableData.data.records = sortQuestion(response.data.data.records);
   }
-  tableData.data=response.data.data;
-  tableData.data.records = sortQuestion(response.data.data.records);
 };
 const handleCurrentChange = (currentPage) => {
-  getQuestionByChapterId(store.state.chapterId,currentPage);
+  getQuestionByChapterId(store.state.currentChapterId, currentPage);
 }
 
 //TODO 鼠标点击题目事件
@@ -141,7 +139,7 @@ let clickRow = (row, column, event) => {
  */
 onMounted(async () => {
   await getChapter();
-  await getQuestionByChapterId(store.state.currentChapterId,1);
+  await getQuestionByChapterId(store.state.currentChapterId, 1);
 });
 </script>
 
