@@ -76,6 +76,7 @@ const MenuData = [
       { id: 2, index: "teacherAdminAdd", name: "新增老师", icon: Plus, disabled:false },
     ],
   },
+  sdfsdf
 ];
 // 菜单默认激活项
 const activeMenu = ref("");
